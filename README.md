@@ -1,0 +1,4 @@
+# RocketLib
+
+Standardize embedded firmware.
+
