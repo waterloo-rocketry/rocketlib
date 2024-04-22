@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include <xc.h>
 
 #include "pwm.h"
@@ -6,15 +8,26 @@ uint16_t rocketlib_pwm_count = 0;
 uint16_t rocketlib_pwm_period = 1000; // In increment of 10us
 uint16_t rocketlib_pwm_negedge_cycle = 0;
 
+volatile bool rocketlib_pwm_enabled = false;
+volatile bool rocketlib_pwm_requested_disable = false;
+
 void timer2_handle_interrupt(void) {
-    rocketlib_pwm_count++;
-    if (rocketlib_pwm_count == rocketlib_pwm_period) {
-        rocketlib_pwm_count = 0;
-    }
-    if (rocketlib_pwm_count == 0) {
-        LATC5 = 1;
-    } else if (rocketlib_pwm_count == rocketlib_pwm_negedge_cycle) {
-        LATC5 = 0;
+    if (rocketlib_pwm_enabled) {
+        rocketlib_pwm_count++;
+        if (rocketlib_pwm_count == rocketlib_pwm_period) {
+            rocketlib_pwm_count = 0;
+            if (rocketlib_pwm_requested_disable) {
+                LATC5 = 0;
+                rocketlib_pwm_requested_disable = false;
+                rocketlib_pwm_enabled = false;
+                return;
+            }
+        }
+        if (rocketlib_pwm_count == 0) {
+            LATC5 = 1;
+        } else if (rocketlib_pwm_count == rocketlib_pwm_negedge_cycle) {
+            LATC5 = 0;
+        }
     }
 }
 
@@ -44,7 +57,7 @@ void pwm_init(uint16_t period) {
     rocketlib_pwm_period = period;
 
     TRISC5 = 0;
-    LATC5 = 1;
+    LATC5 = 0;
 
     PIE4bits.TMR2IE = 1; // enable timer 2 interrupt
 }
@@ -53,6 +66,10 @@ void pwm_set_duty_cycle(uint16_t duty_cycle) {
     rocketlib_pwm_negedge_cycle = duty_cycle * (rocketlib_pwm_period / 1000);
 }
 
-void pwm_enable(void) {}
+void pwm_enable(void) {
+    rocketlib_pwm_enabled = true;
+}
 
-void pwm_disable(void) {}
+void pwm_disable(void) {
+    rocketlib_pwm_requested_disable = true;
+}
