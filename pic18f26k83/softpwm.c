@@ -4,6 +4,10 @@
 
 #include "pwm.h"
 
+#ifndef ROCKETLIB_PWM_PIN
+#error "ROCKETLIB_PWM_PIN need to be defined as pin register name of PWM output, e.g. LATC5"
+#endif
+
 uint16_t rocketlib_pwm_count = 0;
 uint16_t rocketlib_pwm_period = 1000; // In increment of 10us
 uint16_t rocketlib_pwm_negedge_cycle = 0;
@@ -17,16 +21,16 @@ void timer2_handle_interrupt(void) {
         if (rocketlib_pwm_count == rocketlib_pwm_period) {
             rocketlib_pwm_count = 0;
             if (rocketlib_pwm_requested_disable) {
-                LATC5 = 0;
+                ROCKETLIB_PWM_PIN = 0;
                 rocketlib_pwm_requested_disable = false;
                 rocketlib_pwm_enabled = false;
                 return;
             }
         }
         if (rocketlib_pwm_count == 0) {
-            LATC5 = 1;
+            ROCKETLIB_PWM_PIN = 1;
         } else if (rocketlib_pwm_count == rocketlib_pwm_negedge_cycle) {
-            LATC5 = 0;
+            ROCKETLIB_PWM_PIN = 0;
         }
     }
 }
@@ -56,8 +60,7 @@ void pwm_init(uint16_t period) {
 
     rocketlib_pwm_period = period;
 
-    TRISC5 = 0;
-    LATC5 = 0;
+    ROCKETLIB_PWM_PIN = 0;
 
     PIE4bits.TMR2IE = 1; // enable timer 2 interrupt
 }
