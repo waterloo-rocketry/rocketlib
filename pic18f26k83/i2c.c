@@ -6,7 +6,7 @@
 #define I2C_POLL_TIMEOUT 2000
 #endif
 
-void i2c_init(void) {
+void i2c_init(uint8_t clkdiv) {
     // CSTR Enable clocking; S Cleared by hardware after Start; MODE 7-bit address; EN enabled; RSEN
     // disabled;
     I2C1CON0 = 0x84;
@@ -17,7 +17,7 @@ void i2c_init(void) {
     // FME disabled;
     I2C1CON2 = 0x00;
     // Setup clock reference to be base (500khz)/32
-    CLKRCON = 0b10010011;
+    CLKRCON = 0b10010000 | clkdiv;
     CLKRCLK = 0b00000011;
     // CLK clock reference
     I2C1CLK = 0x04;

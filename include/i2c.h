@@ -4,7 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void i2c_init(void);
+/* Initialize I2C Controller
+   I2C Frequency = (100 kHz) / (2 ^ clkdiv)
+   Max frequency clkdiv = b000, 100kHz
+   Min frequency clkdiv = b111, 781.25 Hz
+*/
+void i2c_init(uint8_t clkdiv);
 
 bool i2c_write(uint8_t address, uint8_t *data, uint8_t len);
 
