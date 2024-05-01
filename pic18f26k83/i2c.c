@@ -2,6 +2,10 @@
 
 #include "i2c.h"
 
+#ifndef I2C_POLL_TIMEOUT
+#define I2C_POLL_TIMEOUT 2000
+#endif
+
 void i2c_init(void) {
     // CSTR Enable clocking; S Cleared by hardware after Start; MODE 7-bit address; EN enabled; RSEN
     // disabled;
@@ -27,16 +31,30 @@ bool i2c_write(uint8_t address, uint8_t *data, uint8_t len) {
     I2C1PIRbits.PCIF = 0;
     I2C1ERRbits.NACKIF = 0;
     I2C1CON0bits.S = 1;
+
+    unsigned int timeout;
     while (len--) {
         I2C1TXB = *data++;
-        while (!I2C1STAT1bits.TXBE && !I2C1ERRbits.NACKIF)
-            ;
+        timeout = 0;
+        while (!I2C1STAT1bits.TXBE && !I2C1ERRbits.NACKIF) {
+            if (timeout >= I2C_POLL_TIMEOUT) {
+                break;
+            }
+            timeout++;
+        }
         if (I2C1ERRbits.NACKIF) {
             break;
         }
     }
-    while (!I2C1PIRbits.PCIF)
-        ;
+
+    timeout = 0;
+    while (!I2C1PIRbits.PCIF) {
+        if (timeout >= I2C_POLL_TIMEOUT) {
+            break;
+        }
+        timeout++;
+    }
+
     I2C1PIRbits.PCIF = 0;
     I2C1STAT1bits.CLRBF = 1;
 
@@ -49,16 +67,29 @@ bool i2c_read(uint8_t address, uint8_t *data, uint8_t len) {
     I2C1PIRbits.PCIF = 0;
     I2C1ERRbits.NACKIF = 0;
     I2C1CON0bits.S = 1;
+
+    unsigned int timeout;
     while (len--) {
-        while (!I2C1STAT1bits.RXBF && !I2C1ERRbits.NACKIF)
-            ;
+        timeout = 0;
+        while (!I2C1STAT1bits.RXBF && !I2C1ERRbits.NACKIF) {
+            if (timeout >= I2C_POLL_TIMEOUT) {
+                break;
+            }
+            timeout++;
+        }
         if (I2C1ERRbits.NACKIF) {
             break;
         }
         *data++ = I2C1RXB;
     }
-    while (!I2C1PIRbits.PCIF)
-        ;
+
+    timeout = 0;
+    while (!I2C1PIRbits.PCIF) {
+        if (timeout >= I2C_POLL_TIMEOUT) {
+            break;
+        }
+        timeout++;
+    }
     I2C1PIRbits.PCIF = 0;
     I2C1STAT1bits.CLRBF = 1;
 
