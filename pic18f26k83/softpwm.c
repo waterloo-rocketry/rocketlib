@@ -72,7 +72,11 @@ void pwm_init(uint16_t period) {
 
     rocketlib_pwm_period = period;
 
+#ifndef ROCKETLIB_PWM_INVERT_POLARITY
     ROCKETLIB_PWM_PIN = 0;
+#else
+    ROCKETLIB_PWM_PIN = 1;
+#endif
 
     PIE4bits.TMR2IE = 1; // enable timer 2 interrupt
 }
