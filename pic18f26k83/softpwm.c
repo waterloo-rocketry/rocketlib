@@ -21,16 +21,28 @@ void timer2_handle_interrupt(void) {
         if (rocketlib_pwm_count == rocketlib_pwm_period) {
             rocketlib_pwm_count = 0;
             if (rocketlib_pwm_requested_disable) {
+#ifndef ROCKETLIB_PWM_INVERT_POLARITY
                 ROCKETLIB_PWM_PIN = 0;
+#else
+                ROCKETLIB_PWM_PIN = 1;
+#endif
                 rocketlib_pwm_requested_disable = false;
                 rocketlib_pwm_enabled = false;
                 return;
             }
         }
-        if (rocketlib_pwm_count == 0) {
+        if ((rocketlib_pwm_count == 0) && (rocketlib_pwm_negedge_cycle != 0)) {
+#ifndef ROCKETLIB_PWM_INVERT_POLARITY
             ROCKETLIB_PWM_PIN = 1;
-        } else if (rocketlib_pwm_count == rocketlib_pwm_negedge_cycle) {
+#else
             ROCKETLIB_PWM_PIN = 0;
+#endif
+        } else if (rocketlib_pwm_count == rocketlib_pwm_negedge_cycle) {
+#ifndef ROCKETLIB_PWM_INVERT_POLARITY
+            ROCKETLIB_PWM_PIN = 0;
+#else
+            ROCKETLIB_PWM_PIN = 1;
+#endif
         }
     }
 }
@@ -65,8 +77,20 @@ void pwm_init(uint16_t period) {
     PIE4bits.TMR2IE = 1; // enable timer 2 interrupt
 }
 
-void pwm_set_duty_cycle(uint16_t duty_cycle) {
-    rocketlib_pwm_negedge_cycle = duty_cycle * (rocketlib_pwm_period / 1000);
+bool pwm_set_duty_cycle(uint16_t duty_cycle) {
+    if (duty_cycle > 1000) {
+        return false;
+    }
+    rocketlib_pwm_negedge_cycle = (uint32_t)duty_cycle * rocketlib_pwm_period / 1000;
+    return true;
+}
+
+bool pwm_set_pulse_width(uint16_t pulse_width) {
+    if (pulse_width > rocketlib_pwm_period) {
+        return false;
+    }
+    rocketlib_pwm_negedge_cycle = pulse_width;
+    return true;
 }
 
 void pwm_enable(void) {
