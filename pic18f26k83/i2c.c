@@ -25,7 +25,7 @@ void i2c_init(uint8_t clkdiv) {
     I2C1ERR = 0;
 }
 
-bool i2c_write(uint8_t address, uint8_t *data, uint8_t len) {
+static bool i2c_write(uint8_t address, const uint8_t *data, uint8_t len) {
     I2C1ADB1 = (uint8_t)(address << 1);
     I2C1CNT = len;
     I2C1PIRbits.PCIF = 0;
@@ -61,7 +61,7 @@ bool i2c_write(uint8_t address, uint8_t *data, uint8_t len) {
     return (I2C1ERR & 0x70) != 0;
 }
 
-bool i2c_read(uint8_t address, uint8_t *data, uint8_t len) {
+static bool i2c_read(uint8_t address, uint8_t *data, uint8_t len) {
     I2C1ADB1 = (uint8_t)((address << 1) | 1);
     I2C1CNT = len;
     I2C1PIRbits.PCIF = 0;
@@ -96,13 +96,16 @@ bool i2c_read(uint8_t address, uint8_t *data, uint8_t len) {
     return (I2C1ERR & 0x70) != 0;
 }
 
-bool i2c_write_cmd(uint8_t address, uint8_t cmd) {
-    return i2c_write(address, &cmd, 1);
+bool i2c_write_data(uint8_t address, const uint8_t *data, uint8_t len) {
+    return i2c_write(address, data, len); // i2c_write but public
 }
 
-void i2c_read_reg_multibyte(uint8_t address, uint8_t reg, uint8_t *data, uint8_t len) {
-    i2c_write(address, &reg, 1);
-    i2c_read(address, data, len);
+bool i2c_read_data(uint8_t address, uint8_t reg, uint8_t *data, uint8_t len) {
+    bool success = i2c_write(address, &reg, 1);
+    if (!success) {
+        return false;
+    }
+    return i2c_read(address, data, len);
 }
 
 bool i2c_write_reg8(uint8_t address, uint8_t reg, uint8_t val) {
@@ -110,15 +113,25 @@ bool i2c_write_reg8(uint8_t address, uint8_t reg, uint8_t val) {
     return i2c_write(address, data, 2);
 }
 
-uint8_t i2c_read_reg8(uint8_t address, uint8_t reg) {
-    uint8_t data;
-    i2c_read_reg_multibyte(address, reg, &data, 1);
-    return data;
+bool i2c_write_reg16(uint8_t address, uint8_t reg, uint16_t val) {
+    uint8_t data[3] = {reg, (uint8_t)(val >> 8), (uint8_t)val};
+    return i2c_write(address, data, 3);
 }
 
-uint16_t i2c_read_reg16(uint8_t address, uint8_t reg) {
-    i2c_write(address, &reg, 1);
+bool i2c_read_reg8(uint8_t address, uint8_t reg, uint8_t *value) {
+    return i2c_read_data(address, reg, value, 1);
+}
+
+bool i2c_read_reg16(uint8_t address, uint8_t reg, uint16_t *value) {
+    bool success = i2c_write(address, &reg, 1);
+    if (!success) {
+        return false;
+    }
     uint8_t data[2];
-    i2c_read(address, data, 2);
-    return (uint16_t)(data[0]) << 8 | data[1];
+    success = i2c_read(address, data, 2);
+    if (!success) {
+        return false;
+    }
+    *value = (uint16_t)(data[0]) << 8 | data[1];
+    return true;
 }
