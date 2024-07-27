@@ -115,7 +115,18 @@ bool i2c_write_reg16(uint8_t address, uint8_t reg, uint16_t val) {
 }
 
 bool i2c_read_reg8(uint8_t address, uint8_t reg, uint8_t *value) {
-	return i2c_read_data(address, reg, value, 1);
+    bool success = i2c_write(address, &reg, 1);
+    if (!success) {
+        return false;
+    }
+
+    uint8_t data;
+    success = i2c_read(address, &data, 1);
+    if (!success) {
+        return false;
+    }
+    *value = data;
+    return true;
 }
 
 bool i2c_read_reg16(uint8_t address, uint8_t reg, uint16_t *value) {
