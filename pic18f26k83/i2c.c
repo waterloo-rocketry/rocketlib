@@ -100,11 +100,7 @@ bool i2c_write_data(uint8_t address, const uint8_t *data, uint8_t len) {
     return i2c_write(address, data, len); // i2c_write but public
 }
 
-bool i2c_read_data(uint8_t address, uint8_t reg, uint8_t *data, uint8_t len) {
-    bool success = i2c_write(address, &reg, 1);
-    if (!success) {
-        return false;
-    }
+bool i2c_read_data(uint8_t address, uint8_t *data, uint8_t len) {
     return i2c_read(address, data, len);
 }
 
