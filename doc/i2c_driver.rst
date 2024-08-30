@@ -12,42 +12,34 @@ Assumptions in this revision
 I2C Controller Functions
 ========================
 
-Initialization
---------------
-.. code-block:: c
-				
-  void i2c_init(uint8_t freq);
+.. c:function:: void i2c_init(uint8_t freq_div)
 
-| Initialize I2C module and set up pins.
-| Parameters:
-| - **freq**, frequency divider, exact meaning TBD
+   Initialize I2C module and set up pins
 
-Write multiple byte
--------------------
-.. code-block:: c
-				
-  bool i2c_write_data(uint8_t i2c_addr, const uint8_t *data, uint8_t len);
+   :param freq: frequency divider, I2C Frequency = 100 kHz / freq_div
+
+.. c:function:: bool i2c_write_data(uint8_t i2c_addr, const uint8_t *data, uint8_t len);
   
-| Send data through I2C, this is usually used for sending register address and write data.
-| Parameters:
-| - **i2c_addr**, I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit.
-| - **data**, data to be transmitted
-| - **len**, length of data to be transmitted in bytes, the I2C address byte is not included
-| Return value: ``True`` if successed, ``False`` otherwise.
+  Send data through I2C, this is usually used for sending register address and write data.
 
-Read multiple byte
-------------------
-.. code-block:: c
-				
-  bool i2c_read_data(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *data, uint8_t len);
+  :param i2c_addr: I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit
+  :param data: data to be transmitted
+  :param len: length of data to be transmitted in bytes, the I2C address byte is not included
+  :return: success or not
+  :retval true: success
+  :retval false: failed
+
+.. c:function:: bool i2c_read_data(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *data, uint8_t len);
   
-| Receive data through I2C, this is usually used for receiving read data.
-| Parameters:
-| - **i2c_addr**, I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit.
-| - **reg_addr**, device register map address, max 8 bits wide
-| - **data**, buffer for received data
-| - **len**, length of data to be received in bytes
-| Return value: ``True`` if successed, ``False`` otherwise.
+  Receive data through I2C, this is usually used for receiving read data.
+
+  :param i2c_addr: I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit
+  :param reg_addr: device register map address, max 8 bits wide
+  :param data: buffer for received data
+  :param len: length of data to be received in bytes
+  :return: success or not
+  :retval true: success
+  :retval false: failed
 
 Read 1 byte register
 --------------------
