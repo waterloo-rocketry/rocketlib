@@ -16,82 +16,74 @@ I2C Controller Functions
 
    Initialize I2C module and set up pins
 
-   :param freq: frequency divider, I2C Frequency = 100 kHz / freq_div
+   :param uint8_t freq_div: frequency divider, I2C Frequency = 100 kHz / freq_div
 
-.. c:function:: bool i2c_write_data(uint8_t i2c_addr, const uint8_t *data, uint8_t len);
-  
-  Send data through I2C, this is usually used for sending register address and write data.
+.. c:function:: bool i2c_write_data(uint8_t i2c_addr, const uint8_t *data, uint8_t len)
 
-  :param i2c_addr: I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit
-  :param data: data to be transmitted
-  :param len: length of data to be transmitted in bytes, the I2C address byte is not included
-  :return: success or not
-  :retval true: success
-  :retval false: failed
+   Send data through I2C, this is usually used for sending register address and write data.
 
-.. c:function:: bool i2c_read_data(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *data, uint8_t len);
-  
-  Receive data through I2C, this is usually used for receiving read data.
+   :param uint8_t i2c_addr: I2C peripheral address, where addr[7:1] is the 7-bit address, and addr[0] is the RW bit
+   :param const uint8_t* data: data to be transmitted
+   :param uint8_t len: length of data to be transmitted in bytes, the I2C address byte is not included
+   :return: success or not
+   :retval true: success
+   :retval false: failed
 
-  :param i2c_addr: I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit
-  :param reg_addr: device register map address, max 8 bits wide
-  :param data: buffer for received data
-  :param len: length of data to be received in bytes
-  :return: success or not
-  :retval true: success
-  :retval false: failed
+.. c:function:: bool i2c_read_data(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *data, uint8_t len)
 
-Read 1 byte register
---------------------
-.. code-block:: c
+   Receive data through I2C, this is usually used for receiving read data.
 
-   bool i2c_read_reg8(uint8_t i2c_addr, uint8_t reg_addr, uint8_t* value);
+   :param uint8_t i2c_addr: I2C peripheral address, where addr[7:1] is the 7-bit address, and addr[0] is the RW bit
+   :param uint8_t reg_addr: device register map address, max 8 bits wide
+   :param uint8_t* data: buffer for received data
+   :param uint8_t len: length of data to be received in bytes
+   :return: success or not
+   :retval true: success
+   :retval false: failed
 
-| Read a byte-wide device register
-| Parameters:
-| - **i2c_addr**, I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit.
-| - **reg_addr**, device register map address, max 8 bits wide
-| - **value**, pointer to register value buffer
-| Return value: ``True`` if successed, ``False`` otherwise.
+.. c:function:: bool i2c_read_reg8(uint8_t i2c_addr, uint8_t reg_addr, uint8_t* value)
 
-Read 2 byte register
---------------------
-.. code-block:: c
+   Read a byte-wide device register
 
-   bool i2c_read_reg16(uint8_t i2c_addr, uint8_t reg_addr, uint16_t* value);
+   :param uint8_t i2c_addr: I2C peripheral address, where addr[7:1] is the 7-bit address, and addr[0] is the RW bit
+   :param uint8_t reg_addr: device register map address, max 8 bits wide
+   :param uint8_t* value: pointer to register value buffer
+   :return: success or not
+   :retval true: success
+   :retval false: failed
 
-| Read a byte-wide device register
-| Parameters:
-| - **i2c_addr**, I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit.
-| - **reg_addr**, device register map address, max 8 bits wide
-| - **value**, pointer to register value buffer
-| Return value: ``True`` if successed, ``False`` otherwise.
+.. c:function:: bool i2c_read_reg16(uint8_t i2c_addr, uint8_t reg_addr, uint16_t* value)
 
-Write 1 byte register
----------------------
-.. code-block:: c
+   Read a 2-byte device register
 
-   bool i2c_write_reg8(uint8_t i2c_addr, uint8_t reg_addr, uint8_t value);
+   :param uint8_t i2c_addr: I2C peripheral address, where addr[7:1] is the 7-bit address, and addr[0] is the RW bit
+   :param uint8_t reg_addr: device register map address, max 8 bits wide
+   :param uint16_t* value: pointer to register value buffer
+   :return: success or not
+   :retval true: success
+   :retval false: failed
 
-| Write a byte-wide device register
-| Parameters:
-| - **i2c_addr**, I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit.
-| - **reg_addr**, device register map address, max 8 bits wide
-| - **value**, value to be written to the register
-| Return value: ``True`` if successed, ``False`` otherwise.
+.. c:function:: bool i2c_write_reg8(uint8_t i2c_addr, uint8_t reg_addr, uint8_t value)
 
-Write 2 byte register
----------------------
-.. code-block:: c
+   Write a byte-wide device register
 
-   bool i2c_write_reg16(uint8_t i2c_addr, uint8_t reg_addr, uint16_t value);
+   :param uint8_t i2c_addr: I2C peripheral address, where addr[7:1] is the 7-bit address, and addr[0] is the RW bit
+   :param uint8_t reg_addr: device register map address, max 8 bits wide
+   :param uint8_t value: value to be written to the register
+   :return: success or not
+   :retval true: success
+   :retval false: failed
 
-| Write a byte-wide device register
-| Parameters:
-| - **i2c_addr**, I2C peripheral address, which *addr[7:1]* is the 7 bit address, and *addr[0]* is the RW bit.
-| - **reg_addr**, device register map address, max 8 bits wide
-| - **value**, value to be written to the register
-| Return value: ``True`` if successed, ``False`` otherwise.
+.. c:function:: bool i2c_write_reg16(uint8_t i2c_addr, uint8_t reg_addr, uint16_t value)
+
+   Write a 2-byte device register
+
+   :param uint8_t i2c_addr: I2C peripheral address, where addr[7:1] is the 7-bit address, and addr[0] is the RW bit
+   :param uint8_t reg_addr: device register map address, max 8 bits wide
+   :param uint16_t value: value to be written to the register
+   :return: success or not
+   :retval true: success
+   :retval false: failed
 
 Reference Implementation
 ========================
