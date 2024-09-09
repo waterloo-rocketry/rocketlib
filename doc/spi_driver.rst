@@ -8,55 +8,49 @@ Features
 
 SPI Controller Functions
 ========================
+
 Initialization
 --------------
-.. code-block:: c
-				
-	void spi_init(uint8_t freq);
+.. c:function:: void spi_init(uint8_t freq)
 
-| Initialize SPI module and set up pins.
-| Parameters:
-| - **freq**, frequency divider, exact meaning TBD
+   Initialize SPI module and set up pins.
+
+   :param uint8_t freq: frequency divider, exact meaning TBD
 
 Transmit
 --------
-.. code-block:: c
+.. c:function:: void spi_tx(uint8_t data)
 
-	void spi_tx(uint8_t data);
+   Transmit SPI
 
-| Transmit SPI
-| Parameters:
-| - **data**, 8 bit data to write
+   :param uint8_t data: 8 bit data to write
 
 Receive
 -------
-.. code-block:: c
+.. c:function:: uint8_t spi_rx(void)
 
-	uint8_t spi_rx(void);
+   Receive SPI
 
-| Receive SPI
-| Return value: Received byte
+   :return: Received byte
+   :rtype: uint8_t
 
 Write 8-bit Register
 --------------------
-.. code-block:: c
+.. c:function:: void spi_write8(uint8_t reg_addr, uint8_t value)
 
-	void spi_write8(uint8_t reg_addr, uint8_t value);
+   Write to a 8-bit register of a SPI peripheral.
+   Note that toggle CS line have to be done before and after calling this function.
 
-| Write to a 8-bit register of a SPI peripheral
-| Note that toggle CS line have to be done before and after calling this functin
-| Parameters:
-| - **reg_addr**, 8 bit register address
-| - **value**, 8 bit data to be written
+   :param uint8_t reg_addr: 8 bit register address
+   :param uint8_t value: 8 bit data to be written
 
 Read 8-bit Register
 -------------------
-.. code-block:: c
+.. c:function:: uint8_t spi_read8(uint8_t reg_addr)
 
-	uint8_t spi_read8(uint8_t reg_addr);
+   Read from a 8-bit register of a SPI peripheral.
+   Note that toggle CS line have to be done before and after calling this function.
 
-| Read to a 8-bit register of a SPI peripheral
-| Note that toggle CS line have to be done before and after calling this functin
-| Parameters:
-| - **reg_addr**, 8 bit register address
-| Return value: data read from the register
+   :param uint8_t reg_addr: 8 bit register address
+   :return: data read from the register
+   :rtype: uint8_t
