@@ -8,7 +8,7 @@ Integration
 
 ROCKETLIB_PWM_PIN Macro
 -----------------------
-Set ``ROCKETLIB_PWM_PIN`` macro to the pin register name for output, e.g. ~LATC6~
+Set ``ROCKETLIB_PWM_PIN`` macro to the pin register name for output, e.g. ``LATC6``
 
 ROCKETLIB_PWM_INVERT_POLARITY Macro
 -----------------------------------
@@ -23,48 +23,42 @@ SoftPWM Controller Functions
 
 Initialization
 --------------
-.. code-block:: c
-				
-  void pwm_init(uint16_t period);
+.. c:function:: void pwm_init(uint16_t period)
 
-| Initialize Software PWM
-| Parameters:
-| - **period**, period in increment of 10 us
+   Initialize Software PWM
+
+   :param uint16_t period: period in increment of 10 us
 
 Enable
 ------
-.. code-block:: c
-				
-  void pwm_enable(void);
-  
-| Enable PWM Output
+.. c:function:: void pwm_enable(void)
+
+   Enable PWM Output
 
 Disable
 -------
-.. code-block:: c
-				
-  void pwm_disable(void);
-  
-| Disable PWM Output
+.. c:function:: void pwm_disable(void)
+
+   Disable PWM Output
 
 Set Duty Cycle
 --------------
-.. code-block:: c
-				
-  bool pwm_set_duty_cycle(uint16_t duty_cycle);
-  
-| Set duty cycle
-| Parameters:
-| - **duty_cycle**, Duty cycle in per-mille(1/1000)
-| Return value: ``True`` if successed, ``False`` otherwise.
+.. c:function:: bool pwm_set_duty_cycle(uint16_t duty_cycle)
+
+   Set duty cycle
+
+   :param uint16_t duty_cycle: Duty cycle in per-mille(1/1000)
+   :return: success or not
+   :retval true: success
+   :retval false: failed
 
 Set Pulse Width
 ---------------
-.. code-block:: c
-				
-  bool pwm_set_pulse_width(uint16_t pulse_width);
-  
-| Set pulse width
-| Parameters:
-| - **pulse_width**, pulse width in increment of 10 us
-| Return value: ``True`` if successed, ``False`` otherwise.
+.. c:function:: bool pwm_set_pulse_width(uint16_t pulse_width)
+
+   Set pulse width
+
+   :param uint16_t pulse_width: pulse width in increment of 10 us
+   :return: success or not
+   :retval true: success
+   :retval false: failed
