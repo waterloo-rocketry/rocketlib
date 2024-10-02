@@ -1,5 +1,5 @@
-#ifndef ROCKETLIB_PWM_H
-#define ROCKETLIB_PWM_H
+#ifndef ROCKETLIB_SOFT_PWM_H
+#define ROCKETLIB_SOFT_PWM_H
 
 #include <stdint.h>
 
