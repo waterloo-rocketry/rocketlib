@@ -17,5 +17,6 @@ Welcome to Waterloo Rocketry Standard Embedded Firmware's documentation!
    spi_driver.rst
    pwm_driver.rst
    adc_driver.rst
+   millis.rst
 
    main_func.rst
