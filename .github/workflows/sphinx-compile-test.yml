@@ -1,0 +1,18 @@
+name: Test Sphinx HTML compile
+
+# Runs on pushes to pull request
+on: pull_request
+
+jobs:
+  # Build job
+  build:
+    name: Test Compile Sphinx HTML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Sphinx
+        run: |
+          sudo apt install python3-sphinx-rtd-theme
+      - name: Build with sphinx
+        run: make html SPHINXOPTS="-W"
+        working-directory: doc
