@@ -1,5 +1,5 @@
-GPIO Driver
-***********
+GPIO Driver (Not Implemented)
+*****************************
 
 Macros
 ======

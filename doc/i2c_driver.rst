@@ -84,7 +84,3 @@ I2C Controller Functions
    :return: success or not
    :retval true: success
    :retval false: failed
-
-Reference Implementation
-========================
-`My2C <https://github.com/waterloo-rocketry/cansw_sensor/blob/a4ad06b4324a6edf7b92796053f81f6b336b0ab0/my2c.c>`_ in cansw_sensor.
