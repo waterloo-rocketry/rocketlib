@@ -1,5 +1,5 @@
-Appendix A: Main Function
-=========================
+Appendix A: Reference Main Function
+===================================
 
 The main function serves as the entry point for the CAN boards firmware.
 
