@@ -2,7 +2,7 @@
 
 #include <xc.h>
 
-#include "pwm.h"
+#include "softpwm.h"
 
 #ifndef ROCKETLIB_PWM_PIN
 #error "ROCKETLIB_PWM_PIN need to be defined as pin register name of PWM output, e.g. LATC5"
