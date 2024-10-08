@@ -5,16 +5,6 @@ Overview
 --------
 This module provides basic timer functionalities, such as initializing Timer0, handling interrupts, and tracking milliseconds since the timer was started.
 
-Functions
----------
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Functions
-   timer0_init
-   timer0_handle_interrupt
-   millis
-
 .. _timer0_init:
 
 timer0_init
