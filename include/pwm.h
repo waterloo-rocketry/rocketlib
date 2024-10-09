@@ -34,7 +34,7 @@
 
 #include <stdint.h>
 
-void pwm_init(void);
-void updatePulseWidth(uint8_t percent);
+void pwm_init(uint8_t ccp_module, uint8_t output_pin);
+void updatePulseWidth(uint8_t ccp_module, uint16_t dutyCycle);
 
 #endif /* PWM_H */
