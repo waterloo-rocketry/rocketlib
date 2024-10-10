@@ -1,39 +1,81 @@
-/*
- * Microchip Technology Inc. and its subsidiaries.  You may use this software
- * and any derivatives exclusively with Microchip products.
- *
- * THIS SOFTWARE IS SUPPLIED BY MICROCHIP "AS IS".  NO WARRANTIES, WHETHER
- * EXPRESS, IMPLIED OR STATUTORY, APPLY TO THIS SOFTWARE, INCLUDING ANY IMPLIED
- * WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY, AND FITNESS FOR A
- * PARTICULAR PURPOSE, OR ITS INTERACTION WITH MICROCHIP PRODUCTS, COMBINATION
- * WITH ANY OTHER PRODUCTS, OR USE IN ANY APPLICATION.
- *
- * IN NO EVENT WILL MICROCHIP BE LIABLE FOR ANY INDIRECT, SPECIAL, PUNITIVE,
- * INCIDENTAL OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND
- * WHATSOEVER RELATED TO THE SOFTWARE, HOWEVER CAUSED, EVEN IF MICROCHIP HAS
- * BEEN ADVISED OF THE POSSIBILITY OR THE DAMAGES ARE FORESEEABLE.  TO THE
- * FULLEST EXTENT ALLOWED BY LAW, MICROCHIP'S TOTAL LIABILITY ON ALL CLAIMS
- * IN ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT OF FEES, IF
- * ANY, THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
- *
- * MICROCHIP PROVIDES THIS SOFTWARE CONDITIONALLY UPON YOUR ACCEPTANCE OF THESE
- * TERMS.
- */
-
-/*
- * File:
- * Author:
- * Comments:
- * Revision history:
- */
-
-// This is a guard condition so that contents of this file are not included
-// more than once.
 #ifndef PWM_H
 #define PWM_H
 
 #include <stdint.h>
 
+// Macro to configure CCP module pin mapping
+#define CONFIGURE_CCP_PIN(ccp_module, output_pin, pps_reg, tris_reg, pps_value)                    \
+    do {                                                                                           \
+        if (ccp_module == 1 && output_pin == 2) {                                                  \
+            pps_reg = pps_value;                                                                   \
+            tris_reg = 1;                                                                          \
+        } else if (ccp_module == 2 && output_pin == 1) {                                           \
+            pps_reg = pps_value;                                                                   \
+            tris_reg = 1;                                                                          \
+        } else if (ccp_module == 3 && output_pin == 5) {                                           \
+            pps_reg = pps_value;                                                                   \
+            tris_reg = 1;                                                                          \
+        } else if (ccp_module == 4 && output_pin == 0) {                                           \
+            pps_reg = pps_value;                                                                   \
+            tris_reg = 1;                                                                          \
+        }                                                                                          \
+    } while (0)
+
+// Macro to configure CCP module mode
+#define CONFIGURE_CCP_MODE(ccp_module, ccp_con)                                                    \
+    do {                                                                                           \
+        if (ccp_module == 1) {                                                                     \
+            ccp_con.EN = 0b1;                                                                      \
+            ccp_con.FMT = 0b0;                                                                     \
+            ccp_con.MODE = 0b1100;                                                                 \
+        } else if (ccp_module == 2) {                                                              \
+            ccp_con.EN = 0b1;                                                                      \
+            ccp_con.FMT = 0b0;                                                                     \
+            ccp_con.MODE = 0b1100;                                                                 \
+        } else if (ccp_module == 3) {                                                              \
+            ccp_con.EN = 0b1;                                                                      \
+            ccp_con.FMT = 0b0;                                                                     \
+            ccp_con.MODE = 0b1100;                                                                 \
+        } else if (ccp_module == 4) {                                                              \
+            ccp_con.EN = 0b1;                                                                      \
+            ccp_con.FMT = 0b0;                                                                     \
+            ccp_con.MODE = 0b1100;                                                                 \
+        }                                                                                          \
+    } while (0)
+
+// Macro to set the TRIS register for the output pin
+#define SET_PWM_OUTPUT_PIN(ccp_module, output_pin)                                                 \
+    do {                                                                                           \
+        if (ccp_module == 1 && output_pin == 2) {                                                  \
+            TRISC2 = 0;                                                                            \
+        } else if (ccp_module == 2 && output_pin == 1) {                                           \
+            TRISC1 = 0;                                                                            \
+        } else if (ccp_module == 3 && output_pin == 5) {                                           \
+            TRISB5 = 0;                                                                            \
+        } else if (ccp_module == 4 && output_pin == 0) {                                           \
+            TRISB0 = 0;                                                                            \
+        }                                                                                          \
+    } while (0)
+
+// Macro to write the 10-bit duty cycle value to the appropriate CCPRxH:CCPRxL register pair
+#define WRITE_DUTY_CYCLE(ccp_module, dutyCycle)                                                    \
+    do {                                                                                           \
+        if (ccp_module == 1) {                                                                     \
+            CCPR1L = dutyCycle & 0xFF;                                                             \
+            CCPR1H = (dutyCycle >> 8) & 0x03;                                                      \
+        } else if (ccp_module == 2) {                                                              \
+            CCPR2L = dutyCycle & 0xFF;                                                             \
+            CCPR2H = (dutyCycle >> 8) & 0x03;                                                      \
+        } else if (ccp_module == 3) {                                                              \
+            CCPR3L = dutyCycle & 0xFF;                                                             \
+            CCPR3H = (dutyCycle >> 8) & 0x03;                                                      \
+        } else if (ccp_module == 4) {                                                              \
+            CCPR4L = dutyCycle & 0xFF;                                                             \
+            CCPR4H = (dutyCycle >> 8) & 0x03;                                                      \
+        }                                                                                          \
+    } while (0)
+
+// Function prototypes
 void pwm_init(uint8_t ccp_module, uint8_t output_pin);
 void updatePulseWidth(uint8_t ccp_module, uint16_t dutyCycle);
 
