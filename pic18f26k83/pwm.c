@@ -6,7 +6,7 @@
  */
 
 // General PWM control functions with generalized pin and CCP module support
-void pwm_init(uint8_t ccp_module, uint8_t output_pin) {
+void pwm_init(uint8_t ccp_module, uint8_t output_pin, uint16_t pwm_period) {
     // Use macro to configure the CCP pin mapping
     CONFIGURE_CCP_PIN(ccp_module, output_pin, RC2PPS, TRISC2, 0b10010);
     CONFIGURE_CCP_PIN(ccp_module, output_pin, RC1PPS, TRISC1, 0b10001);
@@ -14,9 +14,8 @@ void pwm_init(uint8_t ccp_module, uint8_t output_pin) {
     CONFIGURE_CCP_PIN(ccp_module, output_pin, RB0PPS, TRISB0, 0b01000);
 
     // 2. Load the T2PR register with the PWM period value.
-    // Calculate PWM period using the formula in Equation 23-1: PWM Period = [(T2PR) + 1] * 4 * Tosc
-    // * (TMR2 Prescale Value)
-    T2PR = 251; // Adjust this value as needed based on required PWM frequency
+    // Calculate PWM period using the formula in Equation 23-1: PWM Period = [(T2PR) + 1] * 4 * Tosc * (TMR2 Prescale Value)
+    T2PR = pwm_period; // Set T2PR value based on the desired PWM period. The PWM frequency is the inverse of this period.
 
     // 3. Use macro to configure the CCP module for PWM mode
     CONFIGURE_CCP_MODE(ccp_module, CCP1CONbits);
@@ -37,12 +36,14 @@ void pwm_init(uint8_t ccp_module, uint8_t output_pin) {
     SET_PWM_OUTPUT_PIN(ccp_module, output_pin);
 }
 
-void updatePulseWidth(uint8_t ccp_module, uint16_t dutyCycle) {
+status_t updatePulseWidth(uint8_t ccp_module, uint16_t dutyCycle) {
     // Ensure the duty cycle value is within the 10-bit range (0 to 1023)
     if (dutyCycle > 1023) {
-        dutyCycle = 1023;
+        return W_FAILURE;
     }
 
     // Use macro to write the 10-bit duty cycle value to the appropriate CCPRxH:CCPRxL register pair
     WRITE_DUTY_CYCLE(ccp_module, dutyCycle);
+
+    return W_SUCCESS;
 }
