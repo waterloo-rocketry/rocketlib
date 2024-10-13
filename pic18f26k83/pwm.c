@@ -1,4 +1,5 @@
 #include "pwm.h"
+#include "common.h"
 #include <xc.h>
 
 /*
@@ -14,10 +15,10 @@ void pwm_init(uint8_t ccp_module, uint8_t output_pin, uint16_t pwm_period) {
     CONFIGURE_CCP_PIN(ccp_module, output_pin, RB0PPS, TRISB0, 0b01000);
 
     // 2. Load the T2PR register with the PWM period value.
-    // Calculate PWM period using the formula in Equation 23-1: 
+    // Calculate PWM period using the formula in Equation 23-1:
     // PWM Period = [(T2PR) + 1] * 4 * Tosc * (TMR2 Prescale Value)
-    T2PR = pwm_period; // Set T2PR value based on the desired PWM period. 
-                         // The PWM frequency is the inverse of this period.
+    T2PR = pwm_period; // Set T2PR value based on the desired PWM period.
+                       // The PWM frequency is the inverse of this period.
 
     // 3. Use macro to configure the CCP module for PWM mode
     CONFIGURE_CCP_MODE(ccp_module, CCP1CONbits);
