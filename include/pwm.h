@@ -1,4 +1,4 @@
-#ifndef PWM_H
+#ifndef ROCKETLIB_PWM_H
 #define PWM_H
 
 #include <stdint.h>
@@ -79,4 +79,4 @@
 void pwm_init(uint8_t ccp_module, uint8_t output_pin);
 void updatePulseWidth(uint8_t ccp_module, uint16_t dutyCycle);
 
-#endif /* PWM_H */
+#endif /* ROCKETLIB_PWM_H */
