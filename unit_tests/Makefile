@@ -5,7 +5,7 @@ run_all_test: low_pass_filter_test
 	./low_pass_filter_test
 
 low_pass_filter_test:
-	gcc -Og -g -I ../include $(ROCKETLIB_SRC) $(UNIT_TEST_SRC) -o $@
+	gcc -Og -g -I ../include -D W_DEBUG $(ROCKETLIB_SRC) $(UNIT_TEST_SRC) -o $@
 
 .PHONY: clean
 clean:
