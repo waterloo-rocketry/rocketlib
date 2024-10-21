@@ -3,7 +3,6 @@
 
 #include "common.h"
 #include "low_pass_filter.h"
-#include "unit_test.h"
 
 #define EPSILON 0.0001
 
