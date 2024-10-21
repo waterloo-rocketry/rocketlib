@@ -17,4 +17,4 @@ jobs:
           sudo ./llvm.sh 19
           sudo apt install clang-format-19
       - name: clang-format code formatting check
-        run: clang-format-19 --dry-run -Werror include/*.h common/*.c pic18f26k83/*.c unit_tests/*.h unit_tests/*.h
+        run: clang-format-19 --dry-run -Werror include/*.h common/*.c pic18f26k83/*.c unit_tests/*.c
