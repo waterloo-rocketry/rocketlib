@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Waterloo Rocketry Standard Embedded Firmware'
-copyright = '2024, Jason Xu - Waterloo Rocketry'
-author = 'Jason Xu - Waterloo Rocketry'
-release = '0.99'
+copyright = '2024, Waterloo Rocketry'
+author = 'Waterloo Rocketry'
+release = '2025.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
