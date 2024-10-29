@@ -39,14 +39,14 @@ void pwm_init(uint8_t ccp_module, uint8_t output_pin, uint16_t pwm_period) {
     SET_PWM_OUTPUT_PIN(ccp_module, output_pin);
 }
 
-status_t updatePulseWidth(uint8_t ccp_module, uint16_t dutyCycle) {
+status_t update_pulse_width(uint8_t ccp_module, uint16_t duty_Cycle) {
     // Ensure the duty cycle value is within the 10-bit range (0 to 1023)
-    if (dutyCycle > 1023) {
+    if (duty_cycle > 1023) {
         return W_FAILURE;
     }
 
     // Use macro to write the 10-bit duty cycle value to the appropriate CCPRxH:CCPRxL register pair
-    WRITE_DUTY_CYCLE(ccp_module, dutyCycle);
+    WRITE_DUTY_CYCLE(ccp_module, duty_cycle);
 
     return W_SUCCESS;
 }

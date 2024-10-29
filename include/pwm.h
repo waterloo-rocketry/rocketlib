@@ -58,20 +58,20 @@
     } while (0)
 
 // Macro to write the 10-bit duty cycle value to the appropriate CCPRxH:CCPRxL register pair
-#define WRITE_DUTY_CYCLE(ccp_module, dutyCycle)                                                    \
+#define WRITE_DUTY_CYCLE(ccp_module, duty_cycle)                                                    \
     do {                                                                                           \
         if (ccp_module == 1) {                                                                     \
-            CCPR1L = dutyCycle & 0xFF;                                                             \
-            CCPR1H = (dutyCycle >> 8) & 0x03;                                                      \
+            CCPR1L = duty_cycle & 0xFF;                                                             \
+            CCPR1H = (duty_cycle >> 8) & 0x03;                                                      \
         } else if (ccp_module == 2) {                                                              \
-            CCPR2L = dutyCycle & 0xFF;                                                             \
-            CCPR2H = (dutyCycle >> 8) & 0x03;                                                      \
+            CCPR2L = duty_cycle & 0xFF;                                                             \
+            CCPR2H = (duty_cycle >> 8) & 0x03;                                                      \
         } else if (ccp_module == 3) {                                                              \
-            CCPR3L = dutyCycle & 0xFF;                                                             \
-            CCPR3H = (dutyCycle >> 8) & 0x03;                                                      \
+            CCPR3L = duty_cycle & 0xFF;                                                             \
+            CCPR3H = (duty_cycle >> 8) & 0x03;                                                      \
         } else if (ccp_module == 4) {                                                              \
-            CCPR4L = dutyCycle & 0xFF;                                                             \
-            CCPR4H = (dutyCycle >> 8) & 0x03;                                                      \
+            CCPR4L = duty_cycle & 0xFF;                                                             \
+            CCPR4H = (duty_cycle >> 8) & 0x03;                                                      \
         }                                                                                          \
     } while (0)
 
