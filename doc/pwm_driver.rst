@@ -38,12 +38,12 @@ Output Pin Configuration
 
 Duty Cycle Configuration
 ------------------------
-.. c:macro:: WRITE_DUTY_CYCLE(ccp_module, dutyCycle)
+.. c:macro:: WRITE_DUTY_CYCLE(ccp_module, duty_cycle)
 
    Write the 10-bit duty cycle value to the appropriate CCPRxH:CCPRxL register pair.
 
    :param ccp_module: CCP module number (1-4)
-   :param dutyCycle: 10-bit duty cycle value (0-1023)
+   :param duty_cycle: 10-bit duty cycle value (0-1023)
 
 PWM Controller Functions
 ========================
@@ -60,11 +60,11 @@ Initialization
 
 Update Pulse Width
 ------------------
-.. c:function:: status_t updatePulseWidth(uint8_t ccp_module, uint16_t dutyCycle)
+.. c:function:: status_t update_pulse_width(uint8_t ccp_module, uint16_t duty_cycle)
 
    Update the pulse width (duty cycle) for the specified CCP module.
 
    :param uint8_t ccp_module: CCP module number (1-4)
-   :param uint16_t dutyCycle: New duty cycle value (0-1023)
+   :param uint16_t duty_cycle: New duty cycle value (0-1023)
    :return: W_SUCCESS if successful, W_FAILURE if the duty cycle is out of range
    :rtype: status_t
