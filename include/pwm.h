@@ -77,6 +77,6 @@
 
 // Function prototypes
 void pwm_init(uint8_t ccp_module, uint8_t output_pin, uint16_t pwm_period);
-status_t updatePulseWidth(uint8_t ccp_module, uint16_t dutyCycle);
+status_t update_pulse_width(uint8_t ccp_module, uint16_t duty_cycle);
 
 #endif /* ROCKETLIB_PWM_H */
