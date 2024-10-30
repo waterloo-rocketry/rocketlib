@@ -1,52 +1,66 @@
 #include "pwm.h"
-#include "common.h"
 #include <xc.h>
 
-/*
- * PWM Initialization with Pin Selection
- */
+// Helper function to configure PPS registers using macros
+static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config) {
+    volatile uint8_t *pps_reg;
 
-// General PWM control functions with generalized pin and CCP module support
-void pwm_init(uint8_t ccp_module, uint8_t output_pin, uint16_t pwm_period) {
-    // Use macro to configure the CCP pin mapping
-    CONFIGURE_CCP_PIN(ccp_module, output_pin, RC2PPS, TRISC2, 0b10010);
-    CONFIGURE_CCP_PIN(ccp_module, output_pin, RC1PPS, TRISC1, 0b10001);
-    CONFIGURE_CCP_PIN(ccp_module, output_pin, RB5PPS, TRISB5, 0b01101);
-    CONFIGURE_CCP_PIN(ccp_module, output_pin, RB0PPS, TRISB0, 0b01000);
-
-    // 2. Load the T2PR register with the PWM period value.
-    // Calculate PWM period using the formula in Equation 23-1:
-    // PWM Period = [(T2PR) + 1] * 4 * Tosc * (TMR2 Prescale Value)
-    T2PR = pwm_period; // Set T2PR value based on the desired PWM period.
-                       // The PWM frequency is the inverse of this period.
-
-    // 3. Use macro to configure the CCP module for PWM mode
-    CONFIGURE_CCP_MODE(ccp_module, CCP1CONbits);
-    CONFIGURE_CCP_MODE(ccp_module, CCP2CONbits);
-    CONFIGURE_CCP_MODE(ccp_module, CCP3CONbits);
-    CONFIGURE_CCP_MODE(ccp_module, CCP4CONbits);
-
-    // 4. Configure and start Timer2
-    PIR4bits.TMR2IF = 0; // Clear the TMR2IF interrupt flag bit
-    T2CLK = 0b0001; // Select the timer clock source as FOSC/4
-    T2CONbits.CKPS = 0b111; // Set prescale of 128
-    T2CONbits.ON = 1; // Enable Timer2
-
-    // 5. Enable PWM output pin
-    while (PIR4bits.TMR2IF == 0) {} // Wait until Timer overflows
-
-    // Use macro to set the TRIS register for the output pin
-    SET_PWM_OUTPUT_PIN(ccp_module, output_pin);
-}
-
-status_t update_pulse_width(uint8_t ccp_module, uint16_t duty_Cycle) {
-    // Ensure the duty cycle value is within the 10-bit range (0 to 1023)
-    if (duty_cycle > 1023) {
-        return W_FAILURE;
+    // Ensure the CCP module number is within valid range (1-4)
+    if (ccp_module < 1 || ccp_module > 4) {
+        return W_INVALID_PARAM; // Return error if the module number is out of range
     }
 
-    // Use macro to write the 10-bit duty cycle value to the appropriate CCPRxH:CCPRxL register pair
-    WRITE_DUTY_CYCLE(ccp_module, duty_cycle);
+    // Set the pin as output to drive PWM signal
+    // This macro modifies the TRIS register to set the specified pin as an output
+    SET_TRIS_OUTPUT(pin_config.port, pin_config.pin);
 
-    return W_SUCCESS;
+    // Assign the CCP module to the corresponding PPS register
+    // This macro sets up the peripheral pin select to link the CCP module to the desired pin
+    ASSIGN_PPS(pin_config.port, pin_config.pin, ccp_module);
+
+    return W_SUCCESS; // Return success status after configuring PPS
+}
+
+// Initialize PWM for a specific CCP module
+w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pwm_period) {
+    // Configure PPS registers to map CCP module to the selected pin
+    w_status_t status = configure_pps(ccp_module, pin_config);
+    if (status != W_SUCCESS) {
+        return status; // Return error status if PPS configuration fails
+    }
+
+    // Obtain the address of the CCPxCON register using macro
+    volatile uint8_t *ccp_con = &CCP_CON(ccp_module);
+    *ccp_con = 0x8C; // Enable CCP module in PWM mode (PWM mode selection)
+
+    // Set PWM period using Timer2
+    PR2 = pwm_period & 0xFF; // Load lower 8 bits of PWM period into PR2 register
+    TMR2 = 0; // Reset Timer2 count to 0
+    T2CONbits.T2CKPS = 0; // Set Timer2 prescaler to 1:1 (no prescaling)
+    T2CONbits.TOUTPS = 0; // Set Timer2 postscaler to 1:1 (no postscaling)
+    T2CONbits.TMR2ON = 1; // Start Timer2 to begin PWM operation
+
+    // Wait for Timer2 to reach the period value before starting PWM
+    while (!PIR1bits.TMR2IF) {} // Wait until Timer2 overflow flag is set
+    PIR1bits.TMR2IF = 0; // Clear Timer2 interrupt flag to continue
+
+    return W_SUCCESS; // Return success status after PWM initialization
+}
+
+// Update the duty cycle of a specific CCP module
+w_status_t pwm_update_duty_cycle(uint8_t ccp_module, uint16_t duty_cycle) {
+    // Validate CCP module and duty cycle range
+    if (ccp_module < 1 || ccp_module > 4 || duty_cycle > 1023) {
+        return W_INVALID_PARAM; // Return error if module number or duty cycle is out of range
+    }
+
+    // Update the lower 8 bits of the duty cycle
+    // This sets the low byte of the duty cycle for the PWM signal
+    CCPR_L(ccp_module) = duty_cycle & 0xFF;
+
+    // Update the upper 2 bits of the duty cycle for 10-bit resolution
+    // This sets the high bits of the duty cycle to achieve 10-bit PWM precision
+    CCPR_H(ccp_module) = (duty_cycle >> 8) & 0x03;
+
+    return W_SUCCESS; // Return success status after updating duty cycle
 }
