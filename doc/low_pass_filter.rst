@@ -7,20 +7,11 @@ Macros
 .. c:macro:: SAMPLE_FREQ(time_diff_ms)
    Calculates the sample frequency based on the time difference in milliseconds.
 
-   .. code-block:: c
-
-       #define SAMPLE_FREQ(time_diff_ms) (1000.0 / (time_diff_ms))
-
    :param time_diff_ms: Time difference in milliseconds between samples.
    :return: The sample frequency in Hertz (Hz).
 
 .. c:macro:: LOW_PASS_ALPHA(TR, time_diff_ms)
    Calculates the alpha value for the low-pass filter based on the response time.
-
-   .. code-block:: c
-
-       #define LOW_PASS_ALPHA(TR, time_diff_ms) \
-           ((SAMPLE_FREQ(time_diff_ms) * TR / 5.0) / (1 + SAMPLE_FREQ(time_diff_ms) * TR / 5.0))
 
    :param TR: Response time constant.
    :param time_diff_ms: Time difference in milliseconds between samples.
@@ -32,10 +23,6 @@ Functions
 .. c:function:: w_status_t low_pass_filter_init(double *alpha, double response_time)
    Initializes the low-pass filter by calculating and storing the alpha value based on the given response time.
 
-   .. code-block:: c
-
-       w_status_t low_pass_filter_init(double *alpha, double response_time);
-
    :param alpha: Pointer to a double where the calculated alpha value will be stored.
    :param response_time: Desired response time for the filter in seconds.
    :return: `W_SUCCESS` if initialization is successful, `W_FAILURE` otherwise.
@@ -43,10 +30,6 @@ Functions
 
 .. c:function:: uint16_t update_low_pass(double *alpha, uint16_t new_value, double *low_pass_value)
    Updates the low-pass filter with a new input value and returns the filtered result.
-
-   .. code-block:: c
-
-       uint16_t update_low_pass(double *alpha, uint16_t new_value, double *low_pass_value);
 
    :param alpha: Pointer to the alpha value used in the filter calculation.
    :param new_value: New input value to be filtered.
