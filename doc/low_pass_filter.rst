@@ -5,36 +5,40 @@ Macros
 ======
 
 .. c:macro:: SAMPLE_FREQ(time_diff_ms)
+
    Calculates the sample frequency based on the time difference in milliseconds.
 
-   :param time_diff_ms: Time difference in milliseconds between samples.
-   :return: The sample frequency in Hertz (Hz).
+   :param time_diff_ms: Time difference in milliseconds between samples
+   :return: The sample frequency in Hertz (Hz)
 
 .. c:macro:: LOW_PASS_ALPHA(TR, time_diff_ms)
+
    Calculates the alpha value for the low-pass filter based on the response time.
 
-   :param TR: Response time constant.
-   :param time_diff_ms: Time difference in milliseconds between samples.
-   :return: The alpha value used for the low-pass filter calculation.
+   :param TR: Response time constant
+   :param time_diff_ms: Time difference in milliseconds between samples
+   :return: The alpha value used for the low-pass filter calculation
 
 Functions
 =========
 
 .. c:function:: w_status_t low_pass_filter_init(double *alpha, double response_time)
+
    Initializes the low-pass filter by calculating and storing the alpha value based on the given response time.
 
-   :param alpha: Pointer to a double where the calculated alpha value will be stored.
-   :param response_time: Desired response time for the filter in seconds.
-   :return: `W_SUCCESS` if initialization is successful, `W_FAILURE` otherwise.
+   :param alpha: Pointer to a double where the calculated alpha value will be stored
+   :param response_time: Desired response time for the filter in seconds
+   :return: W_SUCCESS if initialization is successful, W_FAILURE otherwise
    :rtype: w_status_t
 
 .. c:function:: uint16_t update_low_pass(double *alpha, uint16_t new_value, double *low_pass_value)
+
    Updates the low-pass filter with a new input value and returns the filtered result.
 
-   :param alpha: Pointer to the alpha value used in the filter calculation.
-   :param new_value: New input value to be filtered.
-   :param low_pass_value: Pointer to the current filtered value, which will be updated.
-   :return: The updated filtered value as a `uint16_t`. Returns `0` if either `alpha` or `low_pass_value` is `NULL`.
+   :param alpha: Pointer to the alpha value used in the filter calculation
+   :param new_value: New input value to be filtered
+   :param low_pass_value: Pointer to the current filtered value, which will be updated
+   :return: The updated filtered value as a uint16_t. Returns 0 if either alpha or low_pass_value is NULL
    :rtype: uint16_t
 
 Usage Example
