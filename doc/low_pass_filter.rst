@@ -8,8 +8,9 @@ Macros
 
    Calculates the sample frequency based on the time difference in milliseconds.
 
-   :param time_diff_ms: Time difference in milliseconds between samples
-   :return: The sample frequency in Hertz (Hz)
+   :param `double time_diff_ms`: Time difference in milliseconds between samples.
+   :return: The sample frequency in Hertz (Hz).
+   :rtype: double
 
 .. code-block:: c
 
@@ -19,9 +20,10 @@ Macros
 
    Calculates the alpha value for the low-pass filter based on the response time.
 
-   :param TR: Response time constant
-   :param time_diff_ms: Time difference in milliseconds between samples
-   :return: The alpha value used for the low-pass filter calculation
+   :param `double TR`: Response time constant.
+   :param `double time_diff_ms`: Time difference in milliseconds between samples.
+   :return: The alpha value used for the low-pass filter calculation.
+   :rtype: double
 
 .. code-block:: c
 
@@ -35,20 +37,24 @@ Functions
 
    Initializes the low-pass filter by calculating and storing the alpha value based on the given response time.
 
-   :param double *alpha: Pointer to a double where the calculated alpha value will be stored
-   :param double response_time: Desired response time for the filter in seconds
-   :return: `W_SUCCESS` if initialization is successful, `W_INVALID_PARAM` otherwise
-   :rtype: w_status_t
+   :param `double *alpha`: Pointer to a double where the calculated alpha value will be stored.
+   :param `double response_time`: Desired response time for the filter in seconds.
+
+   :retval `W_SUCCESS`: Initialization was successful.
+   :retval `W_INVALID_PARAM`: Invalid parameters were provided.
+   :rtype: `w_status_t`
 
 .. c:function:: bool update_low_pass(double *alpha, uint16_t new_value, double *low_pass_value)
 
    Updates the low-pass filter with a new input value and returns the success status.
 
-   :param double *alpha: Pointer to the alpha value used in the filter calculation
-   :param uint16_t new_value: New input value to be filtered
-   :param double *low_pass_value: Pointer to the current filtered value, which will be updated
-   :return: `true` if the update is successful, `false` otherwise
-   :rtype: bool
+   :param `double *alpha`: Pointer to the alpha value used in the filter calculation.
+   :param `uint16_t new_value`: New input value to be filtered.
+   :param `double *low_pass_value`: Pointer to the current filtered value, which will be updated.
+
+   :retval `true`: Update was successful.
+   :retval `false`: Invalid parameters were provided.
+   :rtype: `bool`
 
 Usage Example
 =============
@@ -96,4 +102,3 @@ Notes
 References
 ==========
 - `Low-Pass Filter <https://en.wikipedia.org/wiki/Low-pass_filter>`_
-- `Embedded Systems Signal Processing <https://www.embedded.com/signal-processing-in-embedded-systems/>`_
