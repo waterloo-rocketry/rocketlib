@@ -5,11 +5,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-`
 #define EPSILON 0.0001
 
-    void
-    test_low_pass_filter_init() {
+void test_low_pass_filter_init() {
     double alpha;
     // Test with valid input
     w_assert(low_pass_filter_init(&alpha, 1.0) == W_SUCCESS);
