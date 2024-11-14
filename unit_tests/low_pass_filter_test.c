@@ -34,32 +34,32 @@ void test_update_low_pass() {
     for (int i = 1; i <= iterations; ++i) {
         // Store the previous low_pass_value before updating
         double previous_low_pass = low_pass_value;
-
         // Calculate the expected value based on the low-pass filter formula
         double expected = (alpha * new_input_value) + ((1.0 - alpha) * previous_low_pass);
-
         // Update the low-pass filter with the fixed input value
-        result = update_low_pass(&alpha, new_input_value, &low_pass_value);
+        result = update_low_pass(alpha, new_input_value, &low_pass_value);
         w_assert(result == W_SUCCESS);
-
         // Print the current iteration and values
         printf(
             "Iteration %2d: Low-Pass Value = %.4f | Expected ~ %.4f\n", i, low_pass_value, expected
         );
-
         // Verify the correctness of the low-pass update
         w_assert(fabs(low_pass_value - expected) < EPSILON);
     }
 
     printf("\nAll iterations completed successfully.\n\n");
 
-    // Test with NULL alpha
-    result = update_low_pass(NULL, new_input_value, &low_pass_value);
+    // Test with alpha out of range
+    result = update_low_pass(-0.1, new_input_value, &low_pass_value);
     w_assert(result == W_INVALID_PARAM);
-    printf("Null alpha test passed.\n");
+    printf("Invalid alpha (negative) test passed.\n");
+
+    result = update_low_pass(1.1, new_input_value, &low_pass_value);
+    w_assert(result == W_INVALID_PARAM);
+    printf("Invalid alpha (greater than 1) test passed.\n");
 
     // Test with NULL low_pass_value
-    result = update_low_pass(&alpha, new_input_value, NULL);
+    result = update_low_pass(alpha, new_input_value, NULL);
     w_assert(result == W_INVALID_PARAM);
     printf("Null low_pass_value test passed.\n");
 }
