@@ -1,10 +1,10 @@
 Low Pass Filter
 ===============
 
-Macros
-======
+Inline Functions
+================
 
-.. c:macro:: SAMPLE_FREQ(time_diff_ms)
+.. c:function:: double sample_freq(double time_diff_ms)
 
    Calculates the sample frequency based on the time difference in milliseconds.
 
@@ -14,9 +14,11 @@ Macros
 
 .. code-block:: c
 
-    #define SAMPLE_FREQ(time_diff_ms) (1000.0 / (time_diff_ms))
+    static inline double sample_freq(double time_diff_ms) {
+        return 1000.0 / time_diff_ms;
+    }
 
-.. c:macro:: LOW_PASS_ALPHA(TR, time_diff_ms)
+.. c:function:: double low_pass_alpha(double TR, double time_diff_ms)
 
    Calculates the alpha value for the low-pass filter based on the response time.
 
@@ -27,8 +29,11 @@ Macros
 
 .. code-block:: c
 
-    #define LOW_PASS_ALPHA(TR, time_diff_ms) \
-        ((SAMPLE_FREQ(time_diff_ms) * TR / 5.0) / (1 + SAMPLE_FREQ(time_diff_ms) * TR / 5.0))
+    static inline double low_pass_alpha(double TR, double time_diff_ms) {
+        double freq = sample_freq(time_diff_ms);
+        return (freq * TR / 5.0) / (1.0 + freq * TR / 5.0);
+    }
+
 
 Functions
 =========
