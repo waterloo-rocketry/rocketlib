@@ -49,12 +49,12 @@ Functions
    :retval W_INVALID_PARAM: Invalid parameters were provided.
    :rtype: w_status_t
 
-.. c:function:: w_status_t update_low_pass(double *alpha, uint16_t new_value, double *low_pass_value)
+.. c:function:: w_status_t update_low_pass(double alpha, uint16_t new_input_value, double *low_pass_value)
 
    Updates the low-pass filter with a new input value and returns the operation status.
 
-   :param `double *alpha`: Pointer to the alpha value used in the filter calculation.
-   :param `uint16_t new_value`: New input value to be filtered.
+   :param `double alpha`: The alpha value used in the filter calculation.
+   :param `uint16_t new_input_value`: New input value to be filtered.
    :param `double *low_pass_value`: Pointer to the current filtered value, which will be updated.
 
    :retval W_SUCCESS: Update was successful.
