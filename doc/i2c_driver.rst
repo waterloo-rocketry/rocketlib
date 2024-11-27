@@ -1,5 +1,5 @@
-I2C Master Driver
-*****************
+I2C Master Driver (Not Working)
+*******************************
 
 The driver only handles when the device is used as an I2C master, because it's unlikely the MCU is going to used as an I2C slave on the rocket. Functions for reading 8 and 16 bit registers are provided.
 

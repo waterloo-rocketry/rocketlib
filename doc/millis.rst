@@ -1,5 +1,5 @@
-Timer Module Documentation
-===========================
+Timer Module (millis)
+=====================
 
 Overview
 --------
