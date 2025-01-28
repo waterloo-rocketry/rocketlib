@@ -56,105 +56,148 @@ static w_status_t wait_for_idle(void) {
 }
 
 w_status_t i2c_init(uint8_t clkdiv) {
-    // CSTR Enable clocking; S Cleared by hardware after Start; MODE 7-bit address; EN enabled; RSEN
-    // disabled;
-    I2C1CON0 = 0x84;
-    // TXU 0; CSD Clock Stretching enabled; ACKT 0; RXO 0; ACKDT Acknowledge; ACKSTAT ACK received;
-    // ACKCNT Not Acknowledge;
-    I2C1CON1 = 0x80;
-    // ABD enabled; GCEN disabled; ACNT disabled; SDAHT 300 ns hold time; BFRET 8 I2C Clock pulses;
-    // FME disabled;
-    I2C1CON2 = 0x00;
-    // Setup clock reference to be base (500khz)/32
-    CLKRCON = 0b10010000 | clkdiv;
-    CLKRCLK = 0b00000011;
-    // CLK clock reference
-    I2C1CLK = 0x04;
-    I2C1PIR = 0; //    ;Clear all the error flags
+    // Disable module for configuration
+    I2C1CON0bits.EN = 0;
+
+    // Setup and verify clock configuration
+    CLKRCON = 0b10010000 | (clkdiv & 0x07);
+    CLKRCLK = 0b00000011; // MFINTOSC source
+
+    // Wait for clock to stabilize
+    unsigned int timeout = 1000;
+    while (!CLKRCONbits.CLKRDY && --timeout)
+        ;
+    if (!timeout) {
+        return W_IO_ERROR;
+    }
+
+    // Select I2C clock source
+    I2C1CLK = 0x04; // Clock reference
+
+    // Configure I2C module registers
+    I2C1CON0 = 0x04; // 7-bit master mode
+    I2C1CON1 = 0x80; // Enable ACK, clock stretching
+    I2C1CON2 = 0x00; // Standard timing
+
+    // Clear all flags
+    I2C1PIR = 0;
     I2C1ERR = 0;
 
-    return W_SUCCESS;
+    // Enable module and verify bus is free
+    I2C1CON0bits.EN = 1;
+    return wait_for_idle();
 }
 
 static w_status_t i2c_write(uint8_t address, const uint8_t *data, uint8_t len) {
-    I2C1ADB1 = (uint8_t)(address << 1);
+    // Verify bus state and prepare for transfer
+    w_status_t status = check_i2c_state();
+    if (status != W_SUCCESS) {
+        return status;
+    }
+
+    clear_i2c_buffers();
+    I2C1PIR = 0;
+    I2C1ERR = 0;
+
+    // Configure transfer
+    I2C1ADB1 = (uint8_t)(address << 1); // Write address
     I2C1CNT = len;
-    I2C1PIRbits.PCIF = 0;
-    I2C1ERRbits.NACKIF = 0;
+
+    // Start transfer
     I2C1CON0bits.S = 1;
 
-    unsigned int timeout;
+    // Send each byte
     while (len--) {
-        I2C1TXB = *data++;
-        timeout = 0;
-        while (!I2C1STAT1bits.TXBE && !I2C1ERRbits.NACKIF) {
-            if (timeout >= I2C_POLL_TIMEOUT) {
+        unsigned int timeout = 0;
+        // Wait for transmit buffer to be ready
+        while (!I2C1STAT1bits.TXBE) {
+            if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+                return W_IO_ERROR;
+            }
+
+            // Handle clock stretching
+            if (I2C1CON0bits.CSTR) {
+                __delay_us(I2C_STRETCH_DELAY);
+                timeout = 0;
+            } else if (timeout++ >= I2C_POLL_TIMEOUT) {
                 return W_IO_TIMEOUT;
             }
-            timeout++;
         }
-        if (I2C1ERRbits.NACKIF) {
-            return W_IO_ERROR;
-        }
+
+        I2C1TXB = *data++;
     }
 
-    timeout = 0;
+    // Wait for transfer completion
+    unsigned int timeout = 0;
     while (!I2C1PIRbits.PCIF) {
-        if (timeout >= I2C_POLL_TIMEOUT) {
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
             return W_IO_TIMEOUT;
         }
-        timeout++;
-    }
-
-    I2C1PIRbits.PCIF = 0;
-    I2C1STAT1bits.CLRBF = 1;
-
-    if ((I2C1ERR & 0x70) != 0) {
-        return W_IO_ERROR;
     }
 
     return W_SUCCESS;
 }
 
 static w_status_t i2c_read(uint8_t address, uint8_t *data, uint8_t len) {
-    I2C1ADB1 = (uint8_t)((address << 1) | 1);
+    // Verify bus state and prepare for transfer
+    w_status_t status = check_i2c_state();
+    if (status != W_SUCCESS) {
+        return status;
+    }
+
+    clear_i2c_buffers();
+    I2C1PIR = 0;
+    I2C1ERR = 0;
+
+    // Configure transfer
+    I2C1ADB1 = (uint8_t)((address << 1) | 0x01); // Read address
     I2C1CNT = len;
-    I2C1PIRbits.PCIF = 0;
-    I2C1ERRbits.NACKIF = 0;
+
+    // Configure acknowledgment behavior
+    I2C1CON1bits.ACKDT = 0; // ACK bytes
+    if (len == 1) {
+        I2C1CON1bits.ACKCNT = 1; // NACK last byte
+    }
+
+    // Start transfer
     I2C1CON0bits.S = 1;
 
-    unsigned int timeout;
+    // Receive each byte
     while (len--) {
-        timeout = 0;
-        while (!I2C1STAT1bits.RXBF && !I2C1ERRbits.NACKIF) {
-            if (timeout >= I2C_POLL_TIMEOUT) {
+        unsigned int timeout = 0;
+        // Wait for receive buffer to have data
+        while (!I2C1STAT1bits.RXBF) {
+            if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+                return W_IO_ERROR;
+            }
+
+            // Handle clock stretching
+            if (I2C1CON0bits.CSTR) {
+                __delay_us(I2C_STRETCH_DELAY);
+                timeout = 0;
+            } else if (timeout++ >= I2C_POLL_TIMEOUT) {
                 return W_IO_TIMEOUT;
             }
-            timeout++;
         }
-        if (I2C1ERRbits.NACKIF) {
-            return W_IO_ERROR;
-        }
+
         *data++ = I2C1RXB;
     }
 
-    timeout = 0;
+    // Wait for transfer completion
+    unsigned int timeout = 0;
     while (!I2C1PIRbits.PCIF) {
-        if (timeout >= I2C_POLL_TIMEOUT) {
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
             return W_IO_TIMEOUT;
         }
-        timeout++;
-    }
-    I2C1PIRbits.PCIF = 0;
-    I2C1STAT1bits.CLRBF = 1;
-
-    if ((I2C1ERR & 0x70) != 0) {
-        return W_IO_ERROR;
     }
 
     return W_SUCCESS;
 }
 
+/*
+ * Public interface functions
+ * These provide the high-level API for I2C communication
+ */
 w_status_t i2c_write_data(uint8_t address, const uint8_t *data, uint8_t len) {
     return i2c_write(address, data, len);
 }
@@ -169,35 +212,40 @@ w_status_t i2c_write_reg8(uint8_t address, uint8_t reg, uint8_t val) {
 }
 
 w_status_t i2c_write_reg16(uint8_t address, uint8_t reg, uint16_t val) {
-    uint8_t data[3] = {reg, (uint8_t)(val >> 8), (uint8_t)val};
+    uint8_t data[3] = {
+        reg,
+        (uint8_t)(val >> 8), // MSB first
+        (uint8_t)(val & 0xFF) // LSB second
+    };
     return i2c_write(address, data, 3);
 }
 
 w_status_t i2c_read_reg8(uint8_t address, uint8_t reg, uint8_t *value) {
+    // Write register address
     w_status_t status = i2c_write(address, &reg, 1);
     if (status != W_SUCCESS) {
-        return W_IO_ERROR;
+        return status;
     }
 
-    uint8_t data;
-    status = i2c_read(address, &data, 1);
-    if (status != W_SUCCESS) {
-        return W_IO_ERROR;
-    }
-    *value = data;
-    return W_SUCCESS;
+    // Read register value
+    return i2c_read(address, value, 1);
 }
 
 w_status_t i2c_read_reg16(uint8_t address, uint8_t reg, uint16_t *value) {
+    // Write register address
     w_status_t status = i2c_write(address, &reg, 1);
     if (status != W_SUCCESS) {
-        return W_IO_ERROR;
+        return status;
     }
+
+    // Read register value
     uint8_t data[2];
     status = i2c_read(address, data, 2);
     if (status != W_SUCCESS) {
-        return W_IO_ERROR;
+        return status;
     }
-    *value = (uint16_t)(data[0]) << 8 | data[1];
+
+    // Combine bytes (MSB first)
+    *value = ((uint16_t)data[0] << 8) | data[1];
     return W_SUCCESS;
 }
