@@ -2,9 +2,58 @@
 
 #include "i2c.h"
 
-#ifndef I2C_POLL_TIMEOUT
-#define I2C_POLL_TIMEOUT 2000
-#endif
+/* Private function declarations */
+static void clear_i2c_buffers(void);
+static w_status_t check_i2c_state(void);
+static w_status_t wait_for_idle(void);
+static w_status_t i2c_write(uint8_t address, const uint8_t *data, uint8_t len);
+static w_status_t i2c_read(uint8_t address, uint8_t *data, uint8_t len);
+
+/*
+ * Clear I2C buffers and ensure they're in a known state
+ */
+static void clear_i2c_buffers(void) {
+    // Clear the buffer flag and flush any pending data
+    I2C1STAT1bits.CLRBF = 1;
+    while (I2C1STAT1bits.RXBF) {
+        (void)I2C1RXB; // Read and discard any data
+    }
+}
+
+/*
+ * Check the current state of the I2C module
+ * Verifies module is enabled and no errors are present
+ */
+static w_status_t check_i2c_state(void) {
+    if (!I2C1CON0bits.EN) {
+        return W_IO_ERROR; // Module not enabled
+    }
+
+    // Check for any error conditions
+    if (I2C1ERRbits.BCLIF || // Bus collision
+        I2C1ERRbits.BTOIF || // Bus timeout
+        I2C1ERRbits.NACKIF) { // Not acknowledged
+
+        I2C1ERR = 0; // Clear error flags
+        return W_IO_ERROR;
+    }
+
+    return W_SUCCESS;
+}
+
+/*
+ * Wait for the I2C bus to become idle
+ * Monitors the Bus Free bit with timeout protection
+ */
+static w_status_t wait_for_idle(void) {
+    unsigned int timeout = 0;
+    while (!I2C1STAT0bits.BFRE) {
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+    return W_SUCCESS;
+}
 
 w_status_t i2c_init(uint8_t clkdiv) {
     // CSTR Enable clocking; S Cleared by hardware after Start; MODE 7-bit address; EN enabled; RSEN
