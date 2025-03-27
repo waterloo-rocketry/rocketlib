@@ -136,7 +136,7 @@ Practical Considerations
 - **Pin Mapping**: Correct pin mapping is critical for proper operation. Incorrect configuration can result in no output or conflicts with other peripherals.
 
 Usage Example
-============
+=============
 
 .. code-block:: c
 
