@@ -1,7 +1,7 @@
 #include "pwm.h"
 #include <xc.h>
 
-// Helper function to configure PPS registers using macros
+// Helper function to configure PPS registers using direct register access
 static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config) {
 	volatile uint8_t *pps_reg;
 
@@ -13,10 +13,11 @@ static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 	// Set the pin as output to drive PWM signal
 	// This macro modifies the TRIS register to set the specified pin as an output
 	SET_TRIS_OUTPUT(pin_config.port, pin_config.pin);
+    // Set the pin as output to drive PWM signal directly using the TRIS register
+    *pin_config.tris_reg &= ~(1 << pin_config.pin);
 
-	// Assign the CCP module to the corresponding PPS register
-	// This macro sets up the peripheral pin select to link the CCP module to the desired pin
-	ASSIGN_PPS(pin_config.port, pin_config.pin, ccp_module);
+    // Assign the CCP module to the corresponding PPS register directly
+    *pin_config.pps_reg = ccp_module;
 
 	return W_SUCCESS; // Return success status after configuring PPS
 }
