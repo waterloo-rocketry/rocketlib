@@ -12,8 +12,8 @@
 // Structure to hold the configuration details for a PWM pin
 typedef struct {
     volatile uint8_t *tris_reg; // Pointer to TRIS register
-    volatile uint8_t *pps_reg;  // Pointer to PPS register
-    uint8_t pin;                // Pin number (0-7)
+    volatile uint8_t *pps_reg; // Pointer to PPS register
+    uint8_t pin; // Pin number (0-7)
 } pwm_pin_config_t;
 
 // Macro to concatenate tokens for register naming
@@ -39,12 +39,12 @@ w_status_t pwm_init(
 
 /**
  * Example usage:
- * 
+ *
  * pwm_pin_config_t config;
- * config.tris_reg = &TRISA;  // Direct register pointer 
+ * config.tris_reg = &TRISA;  // Direct register pointer
  * config.pps_reg = &RA0PPS;  // Direct register pointer for PPS
  * config.pin = 0;            // Pin number (0-7)
- * 
+ *
  * pwm_init(1, config, 255);  // Initialize PWM on CCP1 with period 255
  */
 
