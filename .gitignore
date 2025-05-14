@@ -1,5 +1,8 @@
 doc/_build
-
 unit_tests/unit_test
-.DS_Store
 *.exe
+
+.cache
+compile_commands.json
+
+.DS_Store
