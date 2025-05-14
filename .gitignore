@@ -1,5 +1,5 @@
 doc/_build
 
-unit_tests/low_pass_filter_test
+unit_tests/unit_test
 .DS_Store
 *.exe
