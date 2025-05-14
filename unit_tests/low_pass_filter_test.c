@@ -1,13 +1,15 @@
-#include "common.h"
-#include "low_pass_filter.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "common.h"
+#include "low_pass_filter.h"
+
 #define EPSILON 0.0001
 
-void test_low_pass_filter_init() {
+void test_low_pass_filter_init(void) {
     double alpha;
     // Test with valid input
     w_assert(low_pass_filter_init(&alpha, 1.0) == W_SUCCESS);
@@ -19,7 +21,7 @@ void test_low_pass_filter_init() {
     w_assert(low_pass_filter_init(&alpha, 0.0) == W_INVALID_PARAM);
 }
 
-void test_update_low_pass() {
+void test_update_low_pass(void) {
     double alpha = 0.1; // Smoothing factor (0 < alpha < 1)
     double low_pass_value = 0.0; // Initial low-pass filtered value
     uint16_t new_input_value = 100; // Fixed input value to test behavior
@@ -62,11 +64,4 @@ void test_update_low_pass() {
     result = update_low_pass(alpha, new_input_value, NULL);
     w_assert(result == W_INVALID_PARAM);
     printf("Null low_pass_value test passed.\n");
-}
-
-int main() {
-    test_low_pass_filter_init();
-    test_update_low_pass();
-    printf("\nAll tests passed!\n");
-    return 0;
 }
