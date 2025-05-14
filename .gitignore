@@ -1,5 +1,8 @@
 doc/_build
-
-unit_tests/low_pass_filter_test
-.DS_Store
+unit_tests/unit_test
 *.exe
+
+.cache
+compile_commands.json
+
+.DS_Store
