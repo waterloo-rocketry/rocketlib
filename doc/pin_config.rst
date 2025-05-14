@@ -1,5 +1,5 @@
 Peripheral Pin Select (PPS) Configuration
-**************************************
+******************************************
 
 Overview
 ========
@@ -9,7 +9,7 @@ different physical I/O pins on the PIC18F26K83. This module provides a clean int
 for setting up all the necessary PPS configurations at initialization time.
 
 Functions
-========
+=========
 
 .. c:function:: w_status_t pin_init(void)
 
@@ -29,10 +29,10 @@ Functions
    This function should be called after basic MCU initialization but before any peripheral initialization.
 
 Implementation Details
-=====================
+=====================================================
 
 Helper Functions
---------------
+-------------------
 
 The implementation includes several helper functions for managing PPS configuration:
 
@@ -73,7 +73,7 @@ The implementation includes several helper functions for managing PPS configurat
    Helper function for configuring peripheral output pin mappings.
 
 Peripheral Configuration Functions
-----------------------------
+-------------------------------------------------
 
 .. c:function:: static w_status_t pps_configure_i2c1(void)
 
@@ -119,7 +119,7 @@ Peripheral Configuration Functions
    clock sources.
 
 Usage Example
-============
+=============
 
 The PPS configuration should be performed early in your application's initialization sequence:
 
