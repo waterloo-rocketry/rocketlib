@@ -1,4 +1,4 @@
-ROCKETLIB_SRC := ../common/low_pass_filter.c
+ROCKETLIB_SRC := ../common/low_pass_filter.c ../common/crc8.c
 UNIT_TEST_SRC := unit_test.c low_pass_filter_test.c
 
 run_all_test: low_pass_filter_test
