@@ -34,34 +34,6 @@ Pin Configuration
 
    :param module: CCP module number (1-4).
 
-.. c:macro:: GET_TRIS_REG(port)
-
-   Retrieves the TRIS register for the specified port.
-
-   :param port: Port letter (A, B, C).
-
-.. c:macro:: GET_PPS_REG(port, pin)
-
-   Retrieves the PPS register address for the specified port and pin.
-
-   :param port: Port letter (A, B, C).
-   :param pin: Pin number (0-7).
-
-.. c:macro:: SET_TRIS_OUTPUT(port, pin)
-
-   Sets the specified pin as output by modifying the TRIS register.
-
-   :param port: Port letter (A, B, C).
-   :param pin: Pin number (0-7).
-
-.. c:macro:: ASSIGN_PPS(port, pin, ccp_module)
-
-   Assigns the CCP module to the specified PPS register to map the peripheral to the desired pin.
-
-   :param port: Port letter (A, B, C).
-   :param pin: Pin number (0-7).
-   :param ccp_module: CCP module number (1-4).
-
 CCP Mode Configuration
 ----------------------
 .. c:macro:: CONFIGURE_CCP_MODE(ccp_module, ccp_con)
@@ -98,9 +70,9 @@ PWM Pin Configuration Structure
 
    Structure that holds the configuration details for a PWM pin.
 
-   :param port: Port letter (A, B, C).
+   :param tris_reg: Pointer to the TRIS register for the pin (e.g., &TRISA).
+   :param pps_reg: Pointer to the PPS register for the pin (e.g., &RA0PPS).
    :param pin: Pin number (0-7).
-   :param pps_reg: PPS register value for this pin.
 
 Initialization
 --------------
@@ -109,7 +81,7 @@ Initialization
    Initializes PWM for the specified CCP module with the given pin configuration and PWM period.
 
    :param ccp_module: CCP module number (1-4).
-   :param pin_config: PWM pin configuration structure containing port, pin, and PPS register values.
+   :param pin_config: PWM pin configuration structure containing TRIS and PPS register pointers, and pin number.
    :param pwm_period: PWM period value.
    :return: W_SUCCESS on successful initialization, otherwise an error code.
 
@@ -146,7 +118,7 @@ PPS Configuration
    Configures Peripheral Pin Select (PPS) for the specified pin and CCP module. This function is essential for routing the PWM signal to the correct output pin.
 
    :param ccp_module: CCP module number (1-4).
-   :param pin_config: Structure containing port, pin, and PPS register values.
+   :param pin_config: Structure containing TRIS and PPS register pointers, and pin number.
    :return: W_SUCCESS if successful, W_INVALID_PARAM if the module number is out of range.
 
 Error Handling
@@ -162,3 +134,32 @@ Practical Considerations
 - **Timer Usage**: Ensure Timer 2 is not shared with other peripherals to avoid conflicts in PWM generation.
 - **Prescaler and Postscaler**: The prescaler and postscaler are currently set to 1:1 for simplicity. These can be adjusted to modify the frequency of the PWM signal.
 - **Pin Mapping**: Correct pin mapping is critical for proper operation. Incorrect configuration can result in no output or conflicts with other peripherals.
+
+Usage Example
+=============
+
+.. code-block:: c
+
+   #include "pwm.h"
+   #include <xc.h>
+
+   void setup_pwm(void) {
+       // Create PWM configuration for pin RA0
+       pwm_pin_config_t pwm_config;
+       pwm_config.tris_reg = &TRISA;    // Direct pointer to TRIS register
+       pwm_config.pps_reg = &RA0PPS;    // Direct pointer to PPS register
+       pwm_config.pin = 0;              // Pin number (RA0)
+
+       // Initialize PWM on CCP1 module with period of 255
+       pwm_init(1, pwm_config, 255);
+
+       // Set initial duty cycle to 50%
+       pwm_update_duty_cycle(1, 512);   // 512 is ~50% of 1023 (10-bit resolution)
+   }
+
+Notes
+-----
+- Using direct register pointers provides better type safety and avoids compile-time macro issues
+- The TRIS register controls pin direction (input/output)
+- The PPS register controls peripheral pin select routing
+- Register pointers must be valid 
