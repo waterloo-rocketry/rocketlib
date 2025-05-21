@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run Test
+      - name: Build Test
         run: make
+        working-directory: unit_tests
+      - name: Run Test
+        run: ./unit_test
         working-directory: unit_tests
