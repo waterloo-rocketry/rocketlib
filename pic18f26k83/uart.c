@@ -1,8 +1,11 @@
 #include <pic18f26k83.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #include "uart.h"
 #include "canlib.h"
 #include "canlib/util/safe_ring_buffer.h"
+
 
 // safe ring buffers for sending and receiving
 static srb_ctx_t rx_buffer;
@@ -11,28 +14,30 @@ static srb_ctx_t tx_buffer;
 // memory pools to use for those srbs. 100 is a completely arbitrary number
 uint8_t rx_buffer_pool[100], tx_buffer_pool[100];
 
-void uart_init(void)
-{
-    TRISB3 = 1;
-    TRISB2 = 1;
-    ANSELB3 = 0;
-    ANSELB2 = 0;
-    // set RX pin location
-    U1RXPPS = (0b001 << 3) | // port B
-              (0b011);       // pin 30
-    // set CTS pin location
-    U1CTSPPS = (0b001 << 3) | // port B
-               (0b010);       // pin 2
+void uart_init(uint32_t baud_rate, uint32_t fosc, bool enable_flow_control)
 
-    TRISB4 = 0;
-    TRISB1 = 0;
-    // Set B4 to TX
-    RB4PPS = 0b010011; // UART1 TX
-    // Set B1 to RTS
-    RB1PPS = 0b010101; // UART1 RTS
+    
+//    TRISB3 = 1;
+//    TRISB2 = 1;
+//    ANSELB3 = 0;
+//    ANSELB2 = 0;
+//    // set RX pin location
+//    U1RXPPS = (0b001 << 3) | // port B
+//              (0b011);       // pin 30
+//    // set CTS pin location
+//    U1CTSPPS = (0b001 << 3) | // port B
+//               (0b010);       // pin 2
+//
+//    TRISB4 = 0;
+//    TRISB1 = 0;
+//    // Set B4 to TX
+//    RB4PPS = 0b010011; // UART1 TX
+//    // Set B1 to RTS
+//    RB1PPS = 0b010101; // UART1 RTS
 
-    // enable flow control.
-    U1CON2bits.FLO = 0b10;
+    // bool controlled flow control.
+    U1CON2bits.FLO = enable_flow_control ? 0b10 : 0b00;
+
     // low speed
     U1CON0bits.BRGS = 0;
     // don't autodetect baudrate
@@ -47,9 +52,13 @@ void uart_init(void)
     // keep running on overflow, never stop receiving
     U1CON2bits.RUNOVF = 1;
 
-    // baud rate stuff, divide by 25 to get 115200 baud
-    U1BRGL = 25;
-    U1BRGH = 0;
+    // dynamic baud rate (478) 
+    uint32_t divisor = (U1CON0bits.BRGS == 1) ? 4 : 16;
+    
+    uint16_t brg = (fosc / (divisor * baud_rate)) - 1;
+    U1BRGH = (brg >> 8) & 0xFF;
+    U1BRGL = brg & 0xFF;
+
 
     // we are go for UART
     U1CON1bits.ON = 1;
