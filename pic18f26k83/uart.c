@@ -16,7 +16,9 @@ uint8_t rx_buffer_pool[100], tx_buffer_pool[100];
 
 w_status_t uart_init(uint32_t baud_rate, uint32_t fosc, bool enable_flow_control) {
     // only 12 or 48 MHz for pic
-    if (fosc != 12000000UL && fosc != 48000000UL) return W_INVALID_PARAM;
+    if (fosc != 12000000UL && fosc != 48000000UL) {
+        return W_INVALID_PARAM;
+    }
 
     // bool controlled flow control.
     U1CON2bits.FLO = enable_flow_control ? 0b10 : 0b00;
