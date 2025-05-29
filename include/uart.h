@@ -1,9 +1,9 @@
 #ifndef UART_H_
-#define	UART_H_
+#define UART_H_
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "common.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 /*
  * Initialize UART module. Set up rx and tx buffers, set up module,
@@ -38,5 +38,5 @@ uint8_t uart_read_byte(void);
  */
 void uart_interrupt_handler(void);
 
-#endif	/* UART_H */
+#endif /* UART_H */
 
