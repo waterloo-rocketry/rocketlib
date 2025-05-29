@@ -3,12 +3,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "common.h"
 
 /*
  * Initialize UART module. Set up rx and tx buffers, set up module,
  * and enable the requisite interrupts
  */
-void uart_init(void);
+w_status_t uart_init(uint32_t baud_rate, uint32_t fosc, bool enable_flow_control);
 
 /*
  * A lot like transmitting a single byte, except there are multiple bytes. tx does
