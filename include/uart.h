@@ -1,9 +1,10 @@
-#ifndef UART_H_
-#define UART_H_
+#ifndef ROCKETLIB_UART_H
+#define ROCKETLIB_UART_H
 
-#include "common.h"
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "common.h"
 
 /*
  * Initialize UART module. Set up rx and tx buffers, set up module,
@@ -38,5 +39,5 @@ uint8_t uart_read_byte(void);
  */
 void uart_interrupt_handler(void);
 
-#endif /* UART_H */
+#endif /* ROCKETLIB_UART_H */
 
