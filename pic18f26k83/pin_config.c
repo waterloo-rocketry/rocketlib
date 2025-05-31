@@ -31,78 +31,117 @@ static w_status_t pps_lock(void) {
 /**
  * @brief Get TRIS register address for the specified port
  */
-static volatile uint8_t* get_tris_register(uint8_t port) {
+static volatile uint8_t *get_tris_register(uint8_t port) {
     switch (port) {
-        case 0U: return &TRISA;
-        case 1U: return &TRISB;
-        case 2U: return &TRISC;
-        default: return NULL;
+        case 0U:
+            return &TRISA;
+        case 1U:
+            return &TRISB;
+        case 2U:
+            return &TRISC;
+        default:
+            return NULL;
     }
 }
 
 /**
  * @brief Get ANSEL register address for the specified port
  */
-static volatile uint8_t* get_ansel_register(uint8_t port) {
+static volatile uint8_t *get_ansel_register(uint8_t port) {
     switch (port) {
-        case 0U: return &ANSELA;
-        case 1U: return &ANSELB;
-        case 2U: return &ANSELC;
-        default: return NULL;
+        case 0U:
+            return &ANSELA;
+        case 1U:
+            return &ANSELB;
+        case 2U:
+            return &ANSELC;
+        default:
+            return NULL;
     }
 }
 
 /**
  * @brief Get ODCON register address for the specified port
  */
-static volatile uint8_t* get_odcon_register(uint8_t port) {
+static volatile uint8_t *get_odcon_register(uint8_t port) {
     switch (port) {
-        case 0U: return &ODCONA;
-        case 1U: return &ODCONB;
-        case 2U: return &ODCONC;
-        default: return NULL;
+        case 0U:
+            return &ODCONA;
+        case 1U:
+            return &ODCONB;
+        case 2U:
+            return &ODCONC;
+        default:
+            return NULL;
     }
 }
 
 /**
  * @brief Get PPS output register address for the specified port and pin
  */
-static volatile uint8_t* get_pps_output_register(uint8_t port, uint8_t pin) {
+static volatile uint8_t *get_pps_output_register(uint8_t port, uint8_t pin) {
     if (port == 0U) { // PORTA
         switch (pin) {
-            case 0U: return &RA0PPS;
-            case 1U: return &RA1PPS;
-            case 2U: return &RA2PPS;
-            case 3U: return &RA3PPS;
-            case 4U: return &RA4PPS;
-            case 5U: return &RA5PPS;
-            case 6U: return &RA6PPS;
-            case 7U: return &RA7PPS;
-            default: return NULL;
+            case 0U:
+                return &RA0PPS;
+            case 1U:
+                return &RA1PPS;
+            case 2U:
+                return &RA2PPS;
+            case 3U:
+                return &RA3PPS;
+            case 4U:
+                return &RA4PPS;
+            case 5U:
+                return &RA5PPS;
+            case 6U:
+                return &RA6PPS;
+            case 7U:
+                return &RA7PPS;
+            default:
+                return NULL;
         }
     } else if (port == 1U) { // PORTB
         switch (pin) {
-            case 0U: return &RB0PPS;
-            case 1U: return &RB1PPS;
-            case 2U: return &RB2PPS;
-            case 3U: return &RB3PPS;
-            case 4U: return &RB4PPS;
-            case 5U: return &RB5PPS;
-            case 6U: return &RB6PPS;
-            case 7U: return &RB7PPS;
-            default: return NULL;
+            case 0U:
+                return &RB0PPS;
+            case 1U:
+                return &RB1PPS;
+            case 2U:
+                return &RB2PPS;
+            case 3U:
+                return &RB3PPS;
+            case 4U:
+                return &RB4PPS;
+            case 5U:
+                return &RB5PPS;
+            case 6U:
+                return &RB6PPS;
+            case 7U:
+                return &RB7PPS;
+            default:
+                return NULL;
         }
     } else if (port == 2U) { // PORTC
         switch (pin) {
-            case 0U: return &RC0PPS;
-            case 1U: return &RC1PPS;
-            case 2U: return &RC2PPS;
-            case 3U: return &RC3PPS;
-            case 4U: return &RC4PPS;
-            case 5U: return &RC5PPS;
-            case 6U: return &RC6PPS;
-            case 7U: return &RC7PPS;
-            default: return NULL;
+            case 0U:
+                return &RC0PPS;
+            case 1U:
+                return &RC1PPS;
+            case 2U:
+                return &RC2PPS;
+            case 3U:
+                return &RC3PPS;
+            case 4U:
+                return &RC4PPS;
+            case 5U:
+                return &RC5PPS;
+            case 6U:
+                return &RC6PPS;
+            case 7U:
+                return &RC7PPS;
+            default:
+                return NULL;
         }
     }
     return NULL;
@@ -363,51 +402,51 @@ w_status_t pps_configure_i2c(uint8_t i2c_module, i2c_pin_config_t pin_config) {
 
     // Unlock PPS registers
     status = pps_unlock();
-    if (status != W_SUCCESS) { 
-        return status; 
+    if (status != W_SUCCESS) {
+        return status;
     }
 
     // Configure SCL pin
     status = configure_pin_digital(pin_config.scl, 1U); // Input initially
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
     status = configure_pin_open_drain(pin_config.scl);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure SDA pin
     status = configure_pin_digital(pin_config.sda, 1U); // Input initially
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
     status = configure_pin_open_drain(pin_config.sda);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS input mappings
     status = configure_i2c_input_pps(i2c_module, pin_config);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS output mappings
     status = configure_pps_output(pin_config.scl, scl_pps_code);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
     status = configure_pps_output(pin_config.sda, sda_pps_code);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
 cleanup:
@@ -434,57 +473,57 @@ w_status_t pps_configure_spi(uint8_t spi_module, spi_pin_config_t pin_config, bo
 
     // Unlock PPS registers
     status = pps_unlock();
-    if (status != W_SUCCESS) { 
-        return status; 
+    if (status != W_SUCCESS) {
+        return status;
     }
 
     // Configure SCK pin (output for master mode)
     status = configure_pin_digital(pin_config.sck, 0U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure SDI pin (input for master mode)
     status = configure_pin_digital(pin_config.sdi, 1U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure SDO pin (output for master mode)
     status = configure_pin_digital(pin_config.sdo, 0U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure SS pin if requested (output for master mode)
     if (use_ss) {
         status = configure_pin_digital(pin_config.ss, 0U);
-        if (status != W_SUCCESS) { 
+        if (status != W_SUCCESS) {
             final_status = status;
-            goto cleanup; 
+            goto cleanup;
         }
     }
 
     // Configure PPS input mappings
     status = configure_spi_input_pps(spi_module, pin_config);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS output mappings
     status = configure_pps_output(pin_config.sck, sck_pps_code);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
     status = configure_pps_output(pin_config.sdo, sdo_pps_code);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
 cleanup:
@@ -511,36 +550,36 @@ w_status_t pps_configure_uart(uint8_t uart_module, uart_pin_config_t pin_config)
 
     // Unlock PPS registers
     status = pps_unlock();
-    if (status != W_SUCCESS) { 
-        return status; 
+    if (status != W_SUCCESS) {
+        return status;
     }
 
     // Configure TX pin (output)
     status = configure_pin_digital(pin_config.tx, 0U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure RX pin (input)
     status = configure_pin_digital(pin_config.rx, 1U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS input mapping
     status = configure_uart_input_pps(uart_module, pin_config.rx);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS output mapping
     status = configure_pps_output(pin_config.tx, tx_pps_code);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
 cleanup:
@@ -567,22 +606,22 @@ w_status_t pps_configure_pwm(uint8_t ccp_module, pwm_pin_config_t pin_config) {
 
     // Unlock PPS registers
     status = pps_unlock();
-    if (status != W_SUCCESS) { 
-        return status; 
+    if (status != W_SUCCESS) {
+        return status;
     }
 
     // Configure output pin (PWM output)
     status = configure_pin_digital(pin_config.output, 0U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS output mapping
     status = configure_pps_output(pin_config.output, pps_code);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
 cleanup:
@@ -602,15 +641,15 @@ w_status_t pps_configure_external_interrupt(uint8_t int_number, ext_int_pin_conf
 
     // Unlock PPS registers
     status = pps_unlock();
-    if (status != W_SUCCESS) { 
-        return status; 
+    if (status != W_SUCCESS) {
+        return status;
     }
 
     // Configure pin as digital input
     status = configure_pin_digital(pin_config.input, 1U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS input mapping based on interrupt number
@@ -647,15 +686,15 @@ w_status_t pps_configure_timer_clk(uint8_t timer, pin_config_t pin_config) {
 
     // Unlock PPS registers
     status = pps_unlock();
-    if (status != W_SUCCESS) { 
-        return status; 
+    if (status != W_SUCCESS) {
+        return status;
     }
 
     // Configure pin as digital input
     status = configure_pin_digital(pin_config, 1U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS input mapping based on timer
@@ -704,15 +743,15 @@ w_status_t pps_configure_timer_gate(uint8_t timer, pin_config_t pin_config) {
 
     // Unlock PPS registers
     status = pps_unlock();
-    if (status != W_SUCCESS) { 
-        return status; 
+    if (status != W_SUCCESS) {
+        return status;
     }
 
     // Configure pin as digital input
     status = configure_pin_digital(pin_config, 1U);
-    if (status != W_SUCCESS) { 
+    if (status != W_SUCCESS) {
         final_status = status;
-        goto cleanup; 
+        goto cleanup;
     }
 
     // Configure PPS input mapping for timer gate

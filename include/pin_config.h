@@ -2,13 +2,13 @@
 #define ROCKETLIB_PIN_CONFIG_H
 
 #include "common.h"
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 // Structure to hold pin configuration details
 typedef struct {
     uint8_t port; // Port number (0=A, 1=B, 2=C)
-    uint8_t pin;  // Pin number (0-7)
+    uint8_t pin; // Pin number (0-7)
 } pin_config_t;
 
 // Structure for I2C pin configuration
@@ -22,7 +22,7 @@ typedef struct {
     pin_config_t sck; // Clock pin configuration
     pin_config_t sdi; // Data input pin configuration
     pin_config_t sdo; // Data output pin configuration
-    pin_config_t ss;  // Slave select pin configuration (optional)
+    pin_config_t ss; // Slave select pin configuration (optional)
 } spi_pin_config_t;
 
 // Structure for UART pin configuration

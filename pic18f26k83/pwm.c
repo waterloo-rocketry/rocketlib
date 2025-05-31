@@ -4,42 +4,60 @@
 /**
  * @brief Get CCPR Low register address for the specified CCP module
  */
-static volatile uint8_t* get_ccpr_low_register(uint8_t ccp_module) {
+static volatile uint8_t *get_ccpr_low_register(uint8_t ccp_module) {
     switch (ccp_module) {
-        case 1U: return &CCPR1L;
-        case 2U: return &CCPR2L;
-        case 3U: return &CCPR3L;
-        case 4U: return &CCPR4L;
-        case 5U: return &CCPR5L;
-        default: return NULL;
+        case 1U:
+            return &CCPR1L;
+        case 2U:
+            return &CCPR2L;
+        case 3U:
+            return &CCPR3L;
+        case 4U:
+            return &CCPR4L;
+        case 5U:
+            return &CCPR5L;
+        default:
+            return NULL;
     }
 }
 
 /**
  * @brief Get CCPR High register address for the specified CCP module
  */
-static volatile uint8_t* get_ccpr_high_register(uint8_t ccp_module) {
+static volatile uint8_t *get_ccpr_high_register(uint8_t ccp_module) {
     switch (ccp_module) {
-        case 1U: return &CCPR1H;
-        case 2U: return &CCPR2H;
-        case 3U: return &CCPR3H;
-        case 4U: return &CCPR4H;
-        case 5U: return &CCPR5H;
-        default: return NULL;
+        case 1U:
+            return &CCPR1H;
+        case 2U:
+            return &CCPR2H;
+        case 3U:
+            return &CCPR3H;
+        case 4U:
+            return &CCPR4H;
+        case 5U:
+            return &CCPR5H;
+        default:
+            return NULL;
     }
 }
 
 /**
  * @brief Get CCPxCON register address for the specified CCP module
  */
-static volatile uint8_t* get_ccp_con_register(uint8_t ccp_module) {
+static volatile uint8_t *get_ccp_con_register(uint8_t ccp_module) {
     switch (ccp_module) {
-        case 1U: return &CCP1CON;
-        case 2U: return &CCP2CON;
-        case 3U: return &CCP3CON;
-        case 4U: return &CCP4CON;
-        case 5U: return &CCP5CON;
-        default: return NULL;
+        case 1U:
+            return &CCP1CON;
+        case 2U:
+            return &CCP2CON;
+        case 3U:
+            return &CCP3CON;
+        case 4U:
+            return &CCP4CON;
+        case 5U:
+            return &CCP5CON;
+        default:
+            return NULL;
     }
 }
 
