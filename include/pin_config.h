@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include <stdint.h>
+#include <stdbool.h>
 
 // Structure to hold pin configuration details
 typedef struct {

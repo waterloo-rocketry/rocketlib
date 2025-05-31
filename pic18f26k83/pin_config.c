@@ -4,264 +4,749 @@
 
 /**
  * @brief Unlocks the PPS registers for configuration
- *
- * Implements the specific sequence from the PIC18F26K83 datasheet
- * to unlock the PPS registers for modification.
- *
- * @return w_status_t W_SUCCESS if successful
  */
 static w_status_t pps_unlock(void) {
+    uint8_t gie_state = INTCON0bits.GIE; // Save current GIE state
     INTCON0bits.GIE = 0; // Disable global interrupts during critical sequence
     PPSLOCK = 0x55; // First unlock sequence value
     PPSLOCK = 0xAA; // Second unlock sequence value
     PPSLOCKbits.PPSLOCKED = 0; // Clear PPSLOCKED bit to enable PPS changes
-    INTCON0bits.GIE = 1; // Re-enable global interrupts
-
+    INTCON0bits.GIE = gie_state; // Restore original GIE state
     return W_SUCCESS;
 }
 
 /**
  * @brief Locks the PPS registers to prevent accidental changes
- *
- * Implements the specific sequence from the PIC18F26K83 datasheet
- * to lock the PPS registers after configuration is complete.
- *
- * @return w_status_t W_SUCCESS if successful
  */
 static w_status_t pps_lock(void) {
+    uint8_t gie_state = INTCON0bits.GIE; // Save current GIE state
     INTCON0bits.GIE = 0; // Disable global interrupts during critical sequence
     PPSLOCK = 0x55; // First lock sequence value
     PPSLOCK = 0xAA; // Second lock sequence value
     PPSLOCKbits.PPSLOCKED = 1; // Set PPSLOCKED bit to lock PPS registers
-    INTCON0bits.GIE = 1; // Re-enable global interrupts
-
+    INTCON0bits.GIE = gie_state; // Restore original GIE state
     return W_SUCCESS;
 }
 
 /**
- * @brief Helper function for PPS input mapping
- *
- * Sets up the mapping between a peripheral input and a physical pin.
- *
- * @param pps_register Pointer to the peripheral's PPS register
- * @param port_pin_code Code representing the port and pin (format: 0bPPPNNN where PPP=port,
- * NNN=pin)
- * @return w_status_t W_SUCCESS if successful, W_INVALID_PARAM if pointer is NULL
+ * @brief Get TRIS register address for the specified port
  */
-static w_status_t pps_input(volatile unsigned char *pps_register, unsigned char port_pin_code) {
-    if (pps_register == NULL) {
-        return W_INVALID_PARAM;
-    }
-
-    *pps_register = port_pin_code;
-    return W_SUCCESS;
-}
-
-/**
- * @brief Helper function for PPS output mapping
- *
- * Sets up the mapping between a peripheral output and a physical pin.
- *
- * @param rxy_pps_register Pointer to the pin's PPS register
- * @param peripheral_code Code representing the peripheral output function
- * @return w_status_t W_SUCCESS if successful, W_INVALID_PARAM if pointer is NULL
- */
-static w_status_t
-pps_output(volatile unsigned char *rxy_pps_register, unsigned char peripheral_code) {
-    if (rxy_pps_register == NULL) {
-        return W_INVALID_PARAM;
-    }
-
-    *rxy_pps_register = peripheral_code;
-    return W_SUCCESS;
-}
-
-/**
- * @brief Configures I2C1 pins for RC3 (SCL) and RC4 (SDA)
- *
- * Sets up PPS registers for the I2C1 module on the PIC18F26K83.
- * Configures both input and output mappings since I2C is bidirectional.
- * Also configures pins for digital mode and open-drain operation.
- *
- * @return w_status_t W_SUCCESS if successful
- */
-static w_status_t pps_configure_i2c1(void) {
-    // Configure digital mode for I2C pins
-    ANSELCbits.ANSC3 = 0; // Set RC3 to digital mode
-    ANSELCbits.ANSC4 = 0; // Set RC4 to digital mode
-
-    // Set pins as inputs initially (I2C peripheral will control them)
-    TRISCbits.TRISC3 = 1; // Set SCL as input
-    TRISCbits.TRISC4 = 1; // Set SDA as input
-
-    // Input mapping for I2C (from pins to peripheral)
-    I2C1SCLPPS = 0b010011; // Map RC3 to I2C1 SCL input
-    I2C1SDAPPS = 0b010100; // Map RC4 to I2C1 SDA input
-
-    // Output mapping for I2C (from peripheral to pins)
-    RC3PPS = 0b100001; // Map I2C1 SCL output to RC3
-    RC4PPS = 0b100010; // Map I2C1 SDA output to RC4
-
-    // Enable open-drain mode for I2C pins (required for I2C operation)
-    ODCONCbits.ODCC3 = 1; // Set RC3 to open-drain mode
-    ODCONCbits.ODCC4 = 1; // Set RC4 to open-drain mode
-
-    return W_SUCCESS;
-}
-
-/**
- * @brief Configures SPI1 pins for master mode
- *
- * Sets up PPS registers for the SPI1 module in master mode:
- * - RB1 (SCK) - Clock output
- * - RB2 (SDI) - Data input
- * - RB3 (SDO) - Data output
- *
- * Also configures pin directions and digital mode appropriately.
- *
- * @return w_status_t W_SUCCESS if successful
- */
-static w_status_t pps_configure_spi1(void) {
-    // Configure digital mode for SPI pins
-    ANSELBbits.ANSELB1 = 0; // Set RB1 to digital mode
-    ANSELBbits.ANSELB2 = 0; // Set RB2 to digital mode
-    ANSELBbits.ANSELB3 = 0; // Set RB3 to digital mode
-
-    // Set correct pin directions for SPI master mode
-    TRISBbits.TRISB1 = 0; // SCK as output (master mode)
-    TRISBbits.TRISB2 = 1; // SDI as input (master reads data)
-    TRISBbits.TRISB3 = 0; // SDO as output (master sends data)
-
-    // Input mapping for SPI (from pins to peripheral)
-    SPI1SCKPPS = 0b001001; // Map RB1 to SPI1 SCK input (for slave mode or feedback)
-    SPI1SDIPPS = 0b001010; // Map RB2 to SPI1 SDI input
-
-    // Output mapping for SPI (from peripheral to pins)
-    RB1PPS = 0b011110; // Map SPI1 SCK output to RB1
-    RB3PPS = 0b011111; // Map SPI1 SDO output to RB3
-
-    return W_SUCCESS;
-}
-
-/**
- * @brief Configures UART1 pins for communication
- *
- * Sets up PPS registers for the UART1 module:
- * - RC6 (TX) - Transmit output
- * - RC7 (RX) - Receive input
- *
- * Also configures pin directions and digital mode appropriately.
- *
- * @return w_status_t W_SUCCESS if successful
- */
-static w_status_t pps_configure_uart1(void) {
-    // Configure digital mode for UART pins
-    ANSELCbits.ANSC6 = 0; // Set RC6 to digital mode
-    ANSELCbits.ANSC7 = 0; // Set RC7 to digital mode
-
-    // Set correct pin directions for UART
-    TRISCbits.TRISC6 = 0; // TX as output
-    TRISCbits.TRISC7 = 1; // RX as input
-
-    // Input mapping for UART (from pin to peripheral)
-    U1RXPPS = 0b010111; // Map RC7 to UART1 RX input
-
-    // Output mapping for UART (from peripheral to pin)
-    RC6PPS = 0b010011; // Map UART1 TX output to RC6
-
-    return W_SUCCESS;
-}
-
-/**
- * @brief Configures timer external clock inputs
- *
- * Maps a physical pin to serve as the external clock input for a timer.
- * Also configures the pin as a digital input.
- *
- * @param timer Timer number to configure (0, 1, 3, 5)
- * @param port Port number where clock input is located (0=PORTA, 1=PORTB, 2=PORTC)
- * @param pin Pin number within the port (0-7)
- * @return w_status_t W_SUCCESS if successful, W_INVALID_PARAM if parameters are invalid
- */
-static w_status_t
-pps_configure_timer_clk(unsigned char timer, unsigned char port, unsigned char pin) {
-    // Create the port-pin PPS input code (format: 0bPPPPPP where bits 5-3=port, bits 2-0=pin)
-    unsigned char port_pin_code = (port << 3) | pin;
-
-    // Configure the pin for digital input
+static volatile uint8_t* get_tris_register(uint8_t port) {
     switch (port) {
-        case 0: // PORTA
-            if (pin < 8) {
-                ANSELA &= ~(1 << pin); // Set pin to digital mode
-                TRISA |= (1 << pin); // Set pin as input
-            }
-            break;
-        case 1: // PORTB
-            if (pin < 8) {
-                ANSELB &= ~(1 << pin); // Set pin to digital mode
-                TRISB |= (1 << pin); // Set pin as input
-            }
-            break;
-        case 2: // PORTC
-            if (pin < 8) {
-                ANSELC &= ~(1 << pin); // Set pin to digital mode
-                TRISC |= (1 << pin); // Set pin as input
-            }
-            break;
-        default:
-            return; // Invalid port
+        case 0U: return &TRISA;
+        case 1U: return &TRISB;
+        case 2U: return &TRISC;
+        default: return NULL;
+    }
+}
+
+/**
+ * @brief Get ANSEL register address for the specified port
+ */
+static volatile uint8_t* get_ansel_register(uint8_t port) {
+    switch (port) {
+        case 0U: return &ANSELA;
+        case 1U: return &ANSELB;
+        case 2U: return &ANSELC;
+        default: return NULL;
+    }
+}
+
+/**
+ * @brief Get ODCON register address for the specified port
+ */
+static volatile uint8_t* get_odcon_register(uint8_t port) {
+    switch (port) {
+        case 0U: return &ODCONA;
+        case 1U: return &ODCONB;
+        case 2U: return &ODCONC;
+        default: return NULL;
+    }
+}
+
+/**
+ * @brief Get PPS output register address for the specified port and pin
+ */
+static volatile uint8_t* get_pps_output_register(uint8_t port, uint8_t pin) {
+    if (port == 0U) { // PORTA
+        switch (pin) {
+            case 0U: return &RA0PPS;
+            case 1U: return &RA1PPS;
+            case 2U: return &RA2PPS;
+            case 3U: return &RA3PPS;
+            case 4U: return &RA4PPS;
+            case 5U: return &RA5PPS;
+            case 6U: return &RA6PPS;
+            case 7U: return &RA7PPS;
+            default: return NULL;
+        }
+    } else if (port == 1U) { // PORTB
+        switch (pin) {
+            case 0U: return &RB0PPS;
+            case 1U: return &RB1PPS;
+            case 2U: return &RB2PPS;
+            case 3U: return &RB3PPS;
+            case 4U: return &RB4PPS;
+            case 5U: return &RB5PPS;
+            case 6U: return &RB6PPS;
+            case 7U: return &RB7PPS;
+            default: return NULL;
+        }
+    } else if (port == 2U) { // PORTC
+        switch (pin) {
+            case 0U: return &RC0PPS;
+            case 1U: return &RC1PPS;
+            case 2U: return &RC2PPS;
+            case 3U: return &RC3PPS;
+            case 4U: return &RC4PPS;
+            case 5U: return &RC5PPS;
+            case 6U: return &RC6PPS;
+            case 7U: return &RC7PPS;
+            default: return NULL;
+        }
+    }
+    return NULL;
+}
+
+/**
+ * @brief Validate pin configuration parameters
+ */
+static w_status_t validate_pin_config(pin_config_t pin_config) {
+    if (pin_config.port > 2U || pin_config.pin > 7U) {
+        return W_INVALID_PARAM;
+    }
+    return W_SUCCESS;
+}
+
+/**
+ * @brief Configure a pin for digital I/O
+ */
+static w_status_t configure_pin_digital(pin_config_t pin_config, uint8_t direction) {
+    w_status_t status = validate_pin_config(pin_config);
+    if (status != W_SUCCESS) {
+        return status;
     }
 
-    // Map the pin to the appropriate timer input
-    switch (timer) {
-        case 0:
-            T0CKIPPS = port_pin_code; // Timer0 external clock input
-            break;
-        case 1:
-            T1CKIPPS = port_pin_code; // Timer1 external clock input
-            break;
-        case 3:
-            T3CKIPPS = port_pin_code; // Timer3 external clock input
-            break;
-        case 5:
-            T5CKIPPS = port_pin_code; // Timer5 external clock input
-            break;
-        default:
-            return W_INVALID_PARAM; // Invalid timer
+    volatile uint8_t *ansel_reg = get_ansel_register(pin_config.port);
+    volatile uint8_t *tris_reg = get_tris_register(pin_config.port);
+
+    if (ansel_reg == NULL || tris_reg == NULL) {
+        return W_INVALID_PARAM;
+    }
+
+    // Set pin to digital mode
+    *ansel_reg &= ~(1U << pin_config.pin);
+
+    // Set direction (0=output, 1=input)
+    if (direction != 0U) {
+        *tris_reg |= (1U << pin_config.pin);
+    } else {
+        *tris_reg &= ~(1U << pin_config.pin);
     }
 
     return W_SUCCESS;
 }
 
 /**
- * @brief Initializes all PPS configurations for peripherals
- *
- * This function sets up all Peripheral Pin Select (PPS) mappings
- * for the PIC18F26K83 microcontroller. It configures:
- * - I2C1 pins (RC3/RC4)
- * - SPI1 pins (RB1/RB2/RB3)
- * - UART1 pins (RC6/RC7)
- *
- * Note that PWM/CCP PPS configuration is handled by the PWM module itself.
- * This function should be called after basic MCU initialization but before
- * initializing any peripherals.
- *
- * @return w_status_t W_SUCCESS if successful
+ * @brief Set pin to open-drain mode
  */
-w_status_t pin_init(void) {
-    // Unlock PPS registers before making any changes
-    pps_unlock();
+static w_status_t configure_pin_open_drain(pin_config_t pin_config) {
+    w_status_t status = validate_pin_config(pin_config);
+    if (status != W_SUCCESS) {
+        return status;
+    }
 
-    // Configure all required peripheral pins
-    pps_configure_i2c1();
-    pps_configure_spi1();
-    pps_configure_uart1();
+    volatile uint8_t *odcon_reg = get_odcon_register(pin_config.port);
+    if (odcon_reg == NULL) {
+        return W_INVALID_PARAM;
+    }
 
-    // Note: PWM/CCP PPS configuration is handled by the PWM module (pwm.c)
-    // When pwm_init() is called, it will configure the necessary PPS settings
-
-    // Lock PPS registers after all configurations
-    pps_lock();
-
+    *odcon_reg |= (1U << pin_config.pin);
     return W_SUCCESS;
 }
+
+/**
+ * @brief Get port-pin code for PPS input mapping
+ */
+static uint8_t get_port_pin_code(pin_config_t pin_config) {
+    return (uint8_t)((pin_config.port << 3) | pin_config.pin);
+}
+
+/**
+ * @brief Configure PPS output mapping
+ */
+static w_status_t configure_pps_output(pin_config_t pin_config, uint8_t peripheral_code) {
+    w_status_t status = validate_pin_config(pin_config);
+    if (status != W_SUCCESS) {
+        return status;
+    }
+
+    volatile uint8_t *pps_reg = get_pps_output_register(pin_config.port, pin_config.pin);
+    if (pps_reg == NULL) {
+        return W_INVALID_PARAM;
+    }
+
+    *pps_reg = peripheral_code;
+    return W_SUCCESS;
+}
+
+/**
+ * @brief Get I2C PPS codes for the specified module
+ */
+static w_status_t get_i2c_pps_codes(uint8_t i2c_module, uint8_t *scl_code, uint8_t *sda_code) {
+    switch (i2c_module) {
+        case 1U:
+            *scl_code = PPS_I2C1_SCL_OUTPUT;
+            *sda_code = PPS_I2C1_SDA_OUTPUT;
+            return W_SUCCESS;
+        case 2U:
+            *scl_code = PPS_I2C2_SCL_OUTPUT;
+            *sda_code = PPS_I2C2_SDA_OUTPUT;
+            return W_SUCCESS;
+        default:
+            return W_INVALID_PARAM;
+    }
+}
+
+/**
+ * @brief Configure I2C PPS input registers
+ */
+static w_status_t configure_i2c_input_pps(uint8_t i2c_module, i2c_pin_config_t pin_config) {
+    uint8_t scl_port_pin_code = get_port_pin_code(pin_config.scl);
+    uint8_t sda_port_pin_code = get_port_pin_code(pin_config.sda);
+
+    switch (i2c_module) {
+        case 1U:
+            I2C1SCLPPS = scl_port_pin_code;
+            I2C1SDAPPS = sda_port_pin_code;
+            return W_SUCCESS;
+        case 2U:
+            I2C2SCLPPS = scl_port_pin_code;
+            I2C2SDAPPS = sda_port_pin_code;
+            return W_SUCCESS;
+        default:
+            return W_INVALID_PARAM;
+    }
+}
+
+/**
+ * @brief Get SPI PPS codes for the specified module
+ */
+static w_status_t get_spi_pps_codes(uint8_t spi_module, uint8_t *sck_code, uint8_t *sdo_code) {
+    switch (spi_module) {
+        case 1U:
+            *sck_code = PPS_SPI1_SCK_OUTPUT;
+            *sdo_code = PPS_SPI1_SDO_OUTPUT;
+            return W_SUCCESS;
+        case 2U:
+            *sck_code = PPS_SPI2_SCK_OUTPUT;
+            *sdo_code = PPS_SPI2_SDO_OUTPUT;
+            return W_SUCCESS;
+        default:
+            return W_INVALID_PARAM;
+    }
+}
+
+/**
+ * @brief Configure SPI PPS input registers
+ */
+static w_status_t configure_spi_input_pps(uint8_t spi_module, spi_pin_config_t pin_config) {
+    uint8_t sck_port_pin_code = get_port_pin_code(pin_config.sck);
+    uint8_t sdi_port_pin_code = get_port_pin_code(pin_config.sdi);
+
+    switch (spi_module) {
+        case 1U:
+            SPI1SCKPPS = sck_port_pin_code;
+            SPI1SDIPPS = sdi_port_pin_code;
+            return W_SUCCESS;
+        case 2U:
+            SPI2SCKPPS = sck_port_pin_code;
+            SPI2SDIPPS = sdi_port_pin_code;
+            return W_SUCCESS;
+        default:
+            return W_INVALID_PARAM;
+    }
+}
+
+/**
+ * @brief Configure UART PPS input registers
+ */
+static w_status_t configure_uart_input_pps(uint8_t uart_module, pin_config_t rx_pin) {
+    uint8_t rx_port_pin_code = get_port_pin_code(rx_pin);
+
+    switch (uart_module) {
+        case 1U:
+            U1RXPPS = rx_port_pin_code;
+            return W_SUCCESS;
+        case 2U:
+            U2RXPPS = rx_port_pin_code;
+            return W_SUCCESS;
+        case 3U:
+            U3RXPPS = rx_port_pin_code;
+            return W_SUCCESS;
+        case 4U:
+            U4RXPPS = rx_port_pin_code;
+            return W_SUCCESS;
+        case 5U:
+            U5RXPPS = rx_port_pin_code;
+            return W_SUCCESS;
+        default:
+            return W_INVALID_PARAM;
+    }
+}
+
+/**
+ * @brief Get UART TX PPS code for the specified module
+ */
+static w_status_t get_uart_tx_pps_code(uint8_t uart_module, uint8_t *tx_code) {
+    switch (uart_module) {
+        case 1U:
+            *tx_code = PPS_UART1_TX_OUTPUT;
+            return W_SUCCESS;
+        case 2U:
+            *tx_code = PPS_UART2_TX_OUTPUT;
+            return W_SUCCESS;
+        case 3U:
+            *tx_code = PPS_UART3_TX_OUTPUT;
+            return W_SUCCESS;
+        case 4U:
+            *tx_code = PPS_UART4_TX_OUTPUT;
+            return W_SUCCESS;
+        case 5U:
+            *tx_code = PPS_UART5_TX_OUTPUT;
+            return W_SUCCESS;
+        default:
+            return W_INVALID_PARAM;
+    }
+}
+
+/**
+ * @brief Get CCP PPS code for the specified module
+ */
+static w_status_t get_ccp_pps_code(uint8_t ccp_module, uint8_t *pps_code) {
+    switch (ccp_module) {
+        case 1U:
+            *pps_code = PPS_CCP1_OUTPUT;
+            return W_SUCCESS;
+        case 2U:
+            *pps_code = PPS_CCP2_OUTPUT;
+            return W_SUCCESS;
+        case 3U:
+            *pps_code = PPS_CCP3_OUTPUT;
+            return W_SUCCESS;
+        case 4U:
+            *pps_code = PPS_CCP4_OUTPUT;
+            return W_SUCCESS;
+        case 5U:
+            *pps_code = PPS_CCP5_OUTPUT;
+            return W_SUCCESS;
+        default:
+            return W_INVALID_PARAM;
+    }
+}
+
+w_status_t pps_configure_i2c(uint8_t i2c_module, i2c_pin_config_t pin_config) {
+    w_status_t status;
+    w_status_t final_status = W_SUCCESS;
+    uint8_t scl_pps_code, sda_pps_code;
+
+    // Validate module number
+    if (i2c_module < 1U || i2c_module > 2U) {
+        return W_INVALID_PARAM;
+    }
+
+    // Get PPS codes for this I2C module
+    status = get_i2c_pps_codes(i2c_module, &scl_pps_code, &sda_pps_code);
+    if (status != W_SUCCESS) {
+        return status;
+    }
+
+    // Unlock PPS registers
+    status = pps_unlock();
+    if (status != W_SUCCESS) { 
+        return status; 
+    }
+
+    // Configure SCL pin
+    status = configure_pin_digital(pin_config.scl, 1U); // Input initially
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+    status = configure_pin_open_drain(pin_config.scl);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure SDA pin
+    status = configure_pin_digital(pin_config.sda, 1U); // Input initially
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+    status = configure_pin_open_drain(pin_config.sda);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS input mappings
+    status = configure_i2c_input_pps(i2c_module, pin_config);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS output mappings
+    status = configure_pps_output(pin_config.scl, scl_pps_code);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+    status = configure_pps_output(pin_config.sda, sda_pps_code);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+cleanup:
+    // Always lock PPS registers before returning
+    pps_lock();
+    return final_status;
+}
+
+w_status_t pps_configure_spi(uint8_t spi_module, spi_pin_config_t pin_config, bool use_ss) {
+    w_status_t status;
+    w_status_t final_status = W_SUCCESS;
+    uint8_t sck_pps_code, sdo_pps_code;
+
+    // Validate module number
+    if (spi_module < 1U || spi_module > 2U) {
+        return W_INVALID_PARAM;
+    }
+
+    // Get PPS codes for this SPI module
+    status = get_spi_pps_codes(spi_module, &sck_pps_code, &sdo_pps_code);
+    if (status != W_SUCCESS) {
+        return status;
+    }
+
+    // Unlock PPS registers
+    status = pps_unlock();
+    if (status != W_SUCCESS) { 
+        return status; 
+    }
+
+    // Configure SCK pin (output for master mode)
+    status = configure_pin_digital(pin_config.sck, 0U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure SDI pin (input for master mode)
+    status = configure_pin_digital(pin_config.sdi, 1U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure SDO pin (output for master mode)
+    status = configure_pin_digital(pin_config.sdo, 0U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure SS pin if requested (output for master mode)
+    if (use_ss) {
+        status = configure_pin_digital(pin_config.ss, 0U);
+        if (status != W_SUCCESS) { 
+            final_status = status;
+            goto cleanup; 
+        }
+    }
+
+    // Configure PPS input mappings
+    status = configure_spi_input_pps(spi_module, pin_config);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS output mappings
+    status = configure_pps_output(pin_config.sck, sck_pps_code);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+    status = configure_pps_output(pin_config.sdo, sdo_pps_code);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+cleanup:
+    // Always lock PPS registers before returning
+    pps_lock();
+    return final_status;
+}
+
+w_status_t pps_configure_uart(uint8_t uart_module, uart_pin_config_t pin_config) {
+    w_status_t status;
+    w_status_t final_status = W_SUCCESS;
+    uint8_t tx_pps_code;
+
+    // Validate module number
+    if (uart_module < 1U || uart_module > 5U) {
+        return W_INVALID_PARAM;
+    }
+
+    // Get TX PPS code for this UART module
+    status = get_uart_tx_pps_code(uart_module, &tx_pps_code);
+    if (status != W_SUCCESS) {
+        return status;
+    }
+
+    // Unlock PPS registers
+    status = pps_unlock();
+    if (status != W_SUCCESS) { 
+        return status; 
+    }
+
+    // Configure TX pin (output)
+    status = configure_pin_digital(pin_config.tx, 0U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure RX pin (input)
+    status = configure_pin_digital(pin_config.rx, 1U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS input mapping
+    status = configure_uart_input_pps(uart_module, pin_config.rx);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS output mapping
+    status = configure_pps_output(pin_config.tx, tx_pps_code);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+cleanup:
+    // Always lock PPS registers before returning
+    pps_lock();
+    return final_status;
+}
+
+w_status_t pps_configure_pwm(uint8_t ccp_module, pwm_pin_config_t pin_config) {
+    w_status_t status;
+    w_status_t final_status = W_SUCCESS;
+    uint8_t pps_code;
+
+    // Validate module number
+    if (ccp_module < 1U || ccp_module > 5U) {
+        return W_INVALID_PARAM;
+    }
+
+    // Get PPS code for this CCP module
+    status = get_ccp_pps_code(ccp_module, &pps_code);
+    if (status != W_SUCCESS) {
+        return status;
+    }
+
+    // Unlock PPS registers
+    status = pps_unlock();
+    if (status != W_SUCCESS) { 
+        return status; 
+    }
+
+    // Configure output pin (PWM output)
+    status = configure_pin_digital(pin_config.output, 0U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS output mapping
+    status = configure_pps_output(pin_config.output, pps_code);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+cleanup:
+    // Always lock PPS registers before returning
+    pps_lock();
+    return final_status;
+}
+
+w_status_t pps_configure_external_interrupt(uint8_t int_number, ext_int_pin_config_t pin_config) {
+    w_status_t status;
+    w_status_t final_status = W_SUCCESS;
+
+    // Validate interrupt number (INT0, INT1, INT2)
+    if (int_number > 2U) {
+        return W_INVALID_PARAM;
+    }
+
+    // Unlock PPS registers
+    status = pps_unlock();
+    if (status != W_SUCCESS) { 
+        return status; 
+    }
+
+    // Configure pin as digital input
+    status = configure_pin_digital(pin_config.input, 1U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS input mapping based on interrupt number
+    uint8_t port_pin_code = get_port_pin_code(pin_config.input);
+    switch (int_number) {
+        case 0U:
+            INT0PPS = port_pin_code;
+            break;
+        case 1U:
+            INT1PPS = port_pin_code;
+            break;
+        case 2U:
+            INT2PPS = port_pin_code;
+            break;
+        default:
+            final_status = W_INVALID_PARAM;
+            goto cleanup;
+    }
+
+cleanup:
+    // Always lock PPS registers before returning
+    pps_lock();
+    return final_status;
+}
+
+w_status_t pps_configure_timer_clk(uint8_t timer, pin_config_t pin_config) {
+    w_status_t status;
+    w_status_t final_status = W_SUCCESS;
+
+    // Validate timer number (expanded to support more timers)
+    if (timer > 6U) {
+        return W_INVALID_PARAM;
+    }
+
+    // Unlock PPS registers
+    status = pps_unlock();
+    if (status != W_SUCCESS) { 
+        return status; 
+    }
+
+    // Configure pin as digital input
+    status = configure_pin_digital(pin_config, 1U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS input mapping based on timer
+    uint8_t port_pin_code = get_port_pin_code(pin_config);
+    switch (timer) {
+        case 0U:
+            T0CKIPPS = port_pin_code;
+            break;
+        case 1U:
+            T1CKIPPS = port_pin_code;
+            break;
+        case 2U:
+            T2CKIPPS = port_pin_code;
+            break;
+        case 3U:
+            T3CKIPPS = port_pin_code;
+            break;
+        case 4U:
+            T4CKIPPS = port_pin_code;
+            break;
+        case 5U:
+            T5CKIPPS = port_pin_code;
+            break;
+        case 6U:
+            T6CKIPPS = port_pin_code;
+            break;
+        default:
+            final_status = W_INVALID_PARAM;
+            goto cleanup;
+    }
+
+cleanup:
+    // Always lock PPS registers before returning
+    pps_lock();
+    return final_status;
+}
+
+w_status_t pps_configure_timer_gate(uint8_t timer, pin_config_t pin_config) {
+    w_status_t status;
+    w_status_t final_status = W_SUCCESS;
+
+    // Validate timer number
+    if (timer > 6U) {
+        return W_INVALID_PARAM;
+    }
+
+    // Unlock PPS registers
+    status = pps_unlock();
+    if (status != W_SUCCESS) { 
+        return status; 
+    }
+
+    // Configure pin as digital input
+    status = configure_pin_digital(pin_config, 1U);
+    if (status != W_SUCCESS) { 
+        final_status = status;
+        goto cleanup; 
+    }
+
+    // Configure PPS input mapping for timer gate
+    uint8_t port_pin_code = get_port_pin_code(pin_config);
+    switch (timer) {
+        case 0U:
+            T0GPPS = port_pin_code;
+            break;
+        case 1U:
+            T1GPPS = port_pin_code;
+            break;
+        case 2U:
+            T2GPPS = port_pin_code;
+            break;
+        case 3U:
+            T3GPPS = port_pin_code;
+            break;
+        case 4U:
+            T4GPPS = port_pin_code;
+            break;
+        case 5U:
+            T5GPPS = port_pin_code;
+            break;
+        case 6U:
+            T6GPPS = port_pin_code;
+            break;
+        default:
+            final_status = W_INVALID_PARAM;
+            goto cleanup;
+    }
+
+cleanup:
+    // Always lock PPS registers before returning
+    pps_lock();
+    return final_status;
+}
+
