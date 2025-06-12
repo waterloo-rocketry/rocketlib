@@ -65,7 +65,7 @@ w_status_t i2c_init(uint8_t clkdiv) {
 
     // Wait for clock to stabilize
     unsigned int timeout = 1000;
-    while (!CLKRCONbits.CLKRDY && --timeout)
+    while (!CLKRCONbits.CLKRDC && --timeout)
         ;
     if (!timeout) {
         return W_IO_ERROR;
