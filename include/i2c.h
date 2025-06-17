@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+#error "C++ is not supported"
+#endif
+
 /* Initialize I2C Controller
    I2C Frequency = (100 kHz) / (2 ^ clkdiv)
    Max frequency clkdiv = b000, 100kHz

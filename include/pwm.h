@@ -1,8 +1,13 @@
 #ifndef ROCKETLIB_PWM_H
 #define ROCKETLIB_PWM_H
 
-#include "common.h"
 #include <stdint.h>
+
+#include "common.h"
+
+#ifdef __cplusplus
+#error "C++ is not supported"
+#endif
 
 // Structure to hold the configuration details for a PWM pin
 typedef struct {
