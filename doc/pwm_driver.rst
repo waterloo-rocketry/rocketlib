@@ -1,119 +1,63 @@
 PIC18 PWM Driver
 ****************
 
-The driver provides PWM output functionality for the PIC18F26K83 using the CCP (Capture/Compare/PWM) modules. It supports up to four PWM channels, each with configurable pin mapping. Timer 2 is utilized by this driver to manage PWM periods.
+The driver provides PWM output functionality for the PIC18F26K83 using the CCP (Capture/Compare/PWM) modules. It supports up to five PWM channels (CCP1-CCP5), each with configurable pin mapping through the pin configuration module. Timer 2 is utilized by this driver to manage PWM periods.
 
-Integration
-===========
+Features
+========
 
-Pin Configuration
------------------
-.. c:macro:: CONCAT(a, b, c)
+* Support for CCP modules 1-5 for PWM output generation
+* Configurable PWM period and duty cycle
+* Timer 2 integration for period management
+* Separation of concerns: pin configuration handled by dedicated pin configuration module
+* BARR-C compliant implementation with proper error handling
 
-   Concatenates three tokens to dynamically form register names.
+Prerequisites
+=============
 
-   :param a: First part of the token.
-   :param b: Second part of the token.
-   :param c: Third part of the token.
+Before using the PWM driver, you must configure the output pins using the pin configuration module:
 
-.. c:macro:: CCPR_L(module)
+.. code-block:: c
 
-   Accesses the CCPR Low register for the specified module.
-
-   :param module: CCP module number (1-4).
-
-.. c:macro:: CCPR_H(module)
-
-   Accesses the CCPR High register for the specified module.
-
-   :param module: CCP module number (1-4).
-
-.. c:macro:: CCP_CON(module)
-
-   Accesses the CCPxCON control register for the specified module.
-
-   :param module: CCP module number (1-4).
-
-.. c:macro:: GET_TRIS_REG(port)
-
-   Retrieves the TRIS register for the specified port.
-
-   :param port: Port letter (A, B, C).
-
-.. c:macro:: GET_PPS_REG(port, pin)
-
-   Retrieves the PPS register address for the specified port and pin.
-
-   :param port: Port letter (A, B, C).
-   :param pin: Pin number (0-7).
-
-.. c:macro:: SET_TRIS_OUTPUT(port, pin)
-
-   Sets the specified pin as output by modifying the TRIS register.
-
-   :param port: Port letter (A, B, C).
-   :param pin: Pin number (0-7).
-
-.. c:macro:: ASSIGN_PPS(port, pin, ccp_module)
-
-   Assigns the CCP module to the specified PPS register to map the peripheral to the desired pin.
-
-   :param port: Port letter (A, B, C).
-   :param pin: Pin number (0-7).
-   :param ccp_module: CCP module number (1-4).
-
-CCP Mode Configuration
-----------------------
-.. c:macro:: CONFIGURE_CCP_MODE(ccp_module, ccp_con)
-
-   Configure the CCP module for PWM mode.
-
-   :param ccp_module: CCP module number (1-4)
-   :param ccp_con: CCPxCON register to configure
-
-Output Pin Configuration
-------------------------
-.. c:macro:: SET_PWM_OUTPUT_PIN(ccp_module, output_pin)
-
-   Set the TRIS register for the output pin.
-
-   :param ccp_module: CCP module number (1-4)
-   :param output_pin: Output pin number
-
-Duty Cycle Configuration
-------------------------
-.. c:macro:: WRITE_DUTY_CYCLE(ccp_module, duty_cycle)
-
-   Write the 10-bit duty cycle value to the appropriate CCPRxH:CCPRxL register pair.
-
-   :param ccp_module: CCP module number (1-4)
-   :param duty_cycle: 10-bit duty cycle value (0-1023)
+   // Configure PWM output pin first
+   pwm_pin_config_t pwm_config = {
+       .output = {.port = 1, .pin = 5} // RB5 for PWM output
+   };
+   w_status_t status = pps_configure_pwm(1, pwm_config);
+   if (status != W_SUCCESS) {
+       // Handle configuration error
+   }
+   
+   // Then initialize PWM module
+   status = pwm_init(1, 1000); // CCP1, period = 1000
+   if (status != W_SUCCESS) {
+       // Handle initialization error
+   }
 
 PWM Controller Functions
 ========================
 
-PWM Pin Configuration Structure
--------------------------------
-.. c:type:: pwm_pin_config_t
+PWM Pin Configuration
+-----------------------
 
-   Structure that holds the configuration details for a PWM pin.
+The PWM pin configuration uses the :c:type:`pwm_pin_config_t` structure defined in the pin configuration module. This structure contains a single output pin configuration that specifies where the PWM signal should be routed.
 
-   :param port: Port letter (A, B, C).
-   :param pin: Pin number (0-7).
-   :param pps_reg: PPS register value for this pin.
+For details on the structure definition, see the :doc:`pin_config` documentation.
 
 Initialization
 --------------
-.. c:function:: w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pwm_period)
+.. c:function:: w_status_t pwm_init(uint8_t ccp_module, uint16_t pwm_period)
 
-   Initializes PWM for the specified CCP module with the given pin configuration and PWM period.
+   Initializes PWM for the specified CCP module with the given PWM period.
 
-   :param ccp_module: CCP module number (1-4).
-   :param pin_config: PWM pin configuration structure containing port, pin, and PPS register values.
+   :param ccp_module: CCP module number (1-5).
    :param pwm_period: PWM period value.
    :return: W_SUCCESS on successful initialization, otherwise an error code.
 
    This function configures Timer 2, sets the PWM period, and enables the PWM output for the specified CCP module.
+   
+   .. note::
+      Pin configuration must be done separately using :c:func:`pps_configure_pwm` from the pin configuration module before calling this function.
 
 PWM Operation
 =============
@@ -122,7 +66,7 @@ PWM Operation
 
    Updates the duty cycle of the specified CCP module to the new value.
 
-   :param ccp_module: CCP module number (1-4).
+   :param ccp_module: CCP module number (1-5).
    :param duty_cycle: New duty cycle value (0-1023).
    :return: W_SUCCESS if successful, W_INVALID_PARAM if parameters are out of range.
 
@@ -130,24 +74,18 @@ PWM Operation
 
 Timer Configuration
 -------------------
-.. c:macro:: CONFIGURE_TIMER2(pwm_period)
 
-   Configures Timer 2 to manage PWM periods. The prescaler and postscaler are set to 1:1.
-
-   :param pwm_period: PWM period value to load into the PR2 register.
+The PWM driver automatically configures Timer 2 to manage PWM periods. The prescaler and postscaler are set to 1:1 for optimal resolution. The PWM period is set during initialization via the ``pwm_init()`` function.
 
 Helper Functions
 ================
 
 PPS Configuration
 -----------------
-.. c:function:: static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 
-   Configures Peripheral Pin Select (PPS) for the specified pin and CCP module. This function is essential for routing the PWM signal to the correct output pin.
+PPS (Peripheral Pin Select) configuration for PWM is handled by the pin configuration module. Use :c:func:`pps_configure_pwm` to configure the output pin before initializing the PWM module.
 
-   :param ccp_module: CCP module number (1-4).
-   :param pin_config: Structure containing port, pin, and PPS register values.
-   :return: W_SUCCESS if successful, W_INVALID_PARAM if the module number is out of range.
+See the :doc:`pin_config` documentation for details on PWM pin configuration.
 
 Error Handling
 ==============

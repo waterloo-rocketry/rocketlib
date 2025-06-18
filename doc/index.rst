@@ -8,6 +8,7 @@ The standard embedded firmware library is a common library for Waterloo Rocketry
    :caption: Contents
 
    pic18_init.rst
+   pin_config.rst
    i2c_driver.rst
    gpio_driver.rst
    spi_driver.rst
