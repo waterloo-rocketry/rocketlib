@@ -6,38 +6,41 @@
 
 #include "common.h"
 
+
 /*
- * Initialize UART module. Set up rx and tx buffers, set up module,
- * and enable the requisite interrupts
+ * Initializes the UART1 module.
+ *
+ * baud_rate: Desired baud rate (e.g., 9600, 115200)
+ * fosc: Clock frequency (must be 12 MHz or 48 MHz)
+ * enable_flow_control: true to enable RTS flow control, false to disable
+ *
+ * Returns: W_SUCCESS if setup is successful, otherwise W_INVALID_PARAM
  */
 w_status_t uart_init(uint32_t baud_rate, uint32_t fosc, bool enable_flow_control);
 
 /*
- * A lot like transmitting a single byte, except there are multiple bytes. tx does
- * not need to be null terminated, that's why we have the len parameter
+ * Transmits a single byte over UART (blocking).
  *
- * tx: pointer to an array of bytes to send
- * len: the number of bytes that should be sent from that array
+ * waits until the transmit buffer is empty, then sends the byte.
  */
-void uart_transmit_buffer(uint8_t *tx, uint8_t len);
+void uart_transmit_byte(uint8_t byte);
+//void uart_transmit_buffer(uint8_t *tx, uint8_t len);
 
 /*
- * returns true if there's a byte waiting to be read from the UART module
- */
-bool uart_byte_available(void);
-
-/*
- * pops a byte from the receive buffer and returns it. Don't call this
- * function unless uart_byte_available is returning true. Don't call this
- * function from an interrupt context.
- */
-uint8_t uart_read_byte(void);
-
-/*
- * handler for all UART1 module interrputs. That is, PIR3:U1IF, U1EIF, U1TXIF, and U1RXIF
- * this function clears the bits in PIR3 that it handles.
+ * Interrupt handler for UART1.
+ *
+ * Handles RX and optional TX,
+ * and calls user-defined uart_rx_callback() on received bytes.
  */
 void uart_interrupt_handler(void);
+
+/*
+ * Callback function called when a byte is received.
+ *
+ * To use: define your own implementation of this function in your code.
+ * If not defined by the user, the weak default will be used (does nothing).
+ */
+void uart_rx_callback(uint8_t byte);  //override this, optional
 
 #endif /* ROCKETLIB_UART_H */
 
