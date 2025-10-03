@@ -1,3 +1,5 @@
+#define _XTAL_FREQ 64000000 // 64MHz HFINTOSC (adjust if using different clock)
+
 #include <xc.h>
 
 #include "i2c.h"
@@ -6,6 +8,7 @@
 static void clear_i2c_buffers(void);
 static w_status_t check_i2c_state(void);
 static w_status_t wait_for_idle(void);
+static w_status_t bus_recovery(void);
 static w_status_t i2c_write(uint8_t address, const uint8_t *data, uint8_t len);
 static w_status_t i2c_read(uint8_t address, uint8_t *data, uint8_t len);
 
@@ -29,9 +32,14 @@ static w_status_t check_i2c_state(void) {
         return W_IO_ERROR; // Module not enabled
     }
 
-    // Check for any error conditions
-    if (I2C1ERRbits.BCLIF || // Bus collision
-        I2C1ERRbits.BTOIF || // Bus timeout
+    // Check for bus collision - requires recovery
+    if (I2C1ERRbits.BCLIF) {
+        I2C1ERR = 0; // Clear error flags
+        return bus_recovery(); // Attempt bus recovery
+    }
+
+    // Check for other error conditions
+    if (I2C1ERRbits.BTOIF || // Bus timeout
         I2C1ERRbits.NACKIF) { // Not acknowledged
 
         I2C1ERR = 0; // Clear error flags
@@ -53,6 +61,61 @@ static w_status_t wait_for_idle(void) {
         }
     }
     return W_SUCCESS;
+}
+
+/*
+ * Bus recovery procedure for stuck SDA/SCL lines
+ * Implements the standard I2C bus recovery protocol:
+ * 1. Generate up to 9 clock pulses to clear stuck SDA
+ * 2. If still stuck, hold SCL low for 35ms to force slave reset
+ */
+static w_status_t bus_recovery(void) {
+    // Disable I2C module to manually control pins
+    I2C1CON0bits.EN = 0;
+
+    // Configure pins as outputs for manual recovery
+    // Note: Pin assignments depend on hardware - adjust TRISx as needed
+    // This assumes RC3=SCL, RC4=SDA (typical for PIC18F26K83)
+    TRISCbits.TRISC3 = 0; // SCL as output
+    TRISCbits.TRISC4 = 0; // SDA as output
+
+    // Try to unstick SDA with up to 9 clock pulses
+    for (uint8_t i = 0; i < 9; i++) {
+        LATCbits.LATC3 = 0; // SCL low
+        __delay_us(5);
+        LATCbits.LATC3 = 1; // SCL high
+        __delay_us(5);
+
+        // Check if SDA is released
+        TRISCbits.TRISC4 = 1; // SDA as input to read
+        if (PORTCbits.RC4 == 1) {
+            // SDA released, recovery successful
+            break;
+        }
+        TRISCbits.TRISC4 = 0; // Back to output
+    }
+
+    // If SDA still stuck, hold SCL low for 35ms to reset slaves
+    TRISCbits.TRISC4 = 1; // SDA as input
+    if (PORTCbits.RC4 == 0) {
+        LATCbits.LATC3 = 0; // Hold SCL low
+        __delay_ms(35);
+        LATCbits.LATC3 = 1; // Release SCL
+        __delay_us(10);
+    }
+
+    // Restore pins to I2C module control
+    TRISCbits.TRISC3 = 1; // SCL as input (I2C will control)
+    TRISCbits.TRISC4 = 1; // SDA as input (I2C will control)
+
+    // Clear all error flags
+    I2C1ERR = 0;
+    I2C1PIR = 0;
+
+    // Re-enable I2C module
+    I2C1CON0bits.EN = 1;
+
+    return wait_for_idle();
 }
 
 w_status_t i2c_init(uint8_t clkdiv) {
@@ -112,6 +175,7 @@ static w_status_t i2c_write(uint8_t address, const uint8_t *data, uint8_t len) {
         // Wait for transmit buffer to be ready
         while (!I2C1STAT1bits.TXBE) {
             if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+                I2C1ERR = 0;
                 return W_IO_ERROR;
             }
 
@@ -168,6 +232,7 @@ static w_status_t i2c_read(uint8_t address, uint8_t *data, uint8_t len) {
         // Wait for receive buffer to have data
         while (!I2C1STAT1bits.RXBF) {
             if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+                I2C1ERR = 0;
                 return W_IO_ERROR;
             }
 
@@ -221,31 +286,165 @@ w_status_t i2c_write_reg16(uint8_t address, uint8_t reg, uint16_t val) {
 }
 
 w_status_t i2c_read_reg8(uint8_t address, uint8_t reg, uint8_t *value) {
-    // Write register address
-    w_status_t status = i2c_write(address, &reg, 1);
+    // Verify bus state and prepare for transfer
+    w_status_t status = check_i2c_state();
     if (status != W_SUCCESS) {
         return status;
     }
 
-    // Read register value
-    return i2c_read(address, value, 1);
+    clear_i2c_buffers();
+    I2C1PIR = 0;
+    I2C1ERR = 0;
+
+    // Write phase: send register address
+    I2C1ADB1 = (uint8_t)(address << 1); // Write address
+    I2C1CNT = 1;
+    I2C1CON0bits.S = 1; // START
+
+    // Wait for TX buffer empty and send register address
+    unsigned int timeout = 0;
+    while (!I2C1STAT1bits.TXBE) {
+        if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+            I2C1ERR = 0;
+            return W_IO_ERROR;
+        }
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+    I2C1TXB = reg;
+
+    // Wait for write to complete
+    timeout = 0;
+    while (!I2C1PIRbits.PCIF) {
+        if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+            I2C1ERR = 0;
+            return W_IO_ERROR;
+        }
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+    I2C1PIRbits.PCIF = 0;
+
+    // Read phase: repeated START
+    clear_i2c_buffers();
+    I2C1ADB1 = (uint8_t)((address << 1) | 0x01); // Read address
+    I2C1CNT = 1;
+    I2C1CON1bits.ACKDT = 0;
+    I2C1CON1bits.ACKCNT = 1; // NACK after single byte
+    I2C1CON0bits.RSEN = 1; // Repeated START
+
+    // Wait for receive buffer
+    timeout = 0;
+    while (!I2C1STAT1bits.RXBF) {
+        if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+            I2C1ERR = 0;
+            return W_IO_ERROR;
+        }
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+
+    *value = I2C1RXB;
+
+    // Wait for transfer completion (STOP will be automatic)
+    timeout = 0;
+    while (!I2C1PIRbits.PCIF) {
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+
+    return W_SUCCESS;
 }
 
 w_status_t i2c_read_reg16(uint8_t address, uint8_t reg, uint16_t *value) {
-    // Write register address
-    w_status_t status = i2c_write(address, &reg, 1);
+    // Verify bus state and prepare for transfer
+    w_status_t status = check_i2c_state();
     if (status != W_SUCCESS) {
         return status;
     }
 
-    // Read register value
-    uint8_t data[2];
-    status = i2c_read(address, data, 2);
-    if (status != W_SUCCESS) {
-        return status;
+    clear_i2c_buffers();
+    I2C1PIR = 0;
+    I2C1ERR = 0;
+
+    // Write phase: send register address
+    I2C1ADB1 = (uint8_t)(address << 1); // Write address
+    I2C1CNT = 1;
+    I2C1CON0bits.S = 1; // START
+
+    // Wait for TX buffer empty and send register address
+    unsigned int timeout = 0;
+    while (!I2C1STAT1bits.TXBE) {
+        if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+            I2C1ERR = 0;
+            return W_IO_ERROR;
+        }
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+    I2C1TXB = reg;
+
+    // Wait for write to complete
+    timeout = 0;
+    while (!I2C1PIRbits.PCIF) {
+        if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+            I2C1ERR = 0;
+            return W_IO_ERROR;
+        }
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+    I2C1PIRbits.PCIF = 0;
+
+    // Read phase: repeated START for 2 bytes
+    clear_i2c_buffers();
+    I2C1ADB1 = (uint8_t)((address << 1) | 0x01); // Read address
+    I2C1CNT = 2;
+    I2C1CON1bits.ACKDT = 0; // ACK first byte
+    I2C1CON1bits.ACKCNT = 0; // Will auto-NACK last byte
+    I2C1CON0bits.RSEN = 1; // Repeated START
+
+    // Read first byte (MSB)
+    timeout = 0;
+    while (!I2C1STAT1bits.RXBF) {
+        if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+            I2C1ERR = 0;
+            return W_IO_ERROR;
+        }
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+    uint8_t msb = I2C1RXB;
+
+    // Read second byte (LSB)
+    timeout = 0;
+    while (!I2C1STAT1bits.RXBF) {
+        if (I2C1ERRbits.NACKIF || I2C1ERRbits.BCLIF) {
+            I2C1ERR = 0;
+            return W_IO_ERROR;
+        }
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
+    }
+    uint8_t lsb = I2C1RXB;
+
+    // Wait for transfer completion (STOP will be automatic)
+    timeout = 0;
+    while (!I2C1PIRbits.PCIF) {
+        if (timeout++ >= I2C_POLL_TIMEOUT) {
+            return W_IO_TIMEOUT;
+        }
     }
 
     // Combine bytes (MSB first)
-    *value = ((uint16_t)data[0] << 8) | data[1];
+    *value = ((uint16_t)msb << 8) | lsb;
     return W_SUCCESS;
 }
