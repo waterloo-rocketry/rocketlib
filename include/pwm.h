@@ -11,9 +11,9 @@
 
 // Structure to hold the configuration details for a PWM pin
 typedef struct {
-    uint8_t port; // Port letter (A, B, C)
-    uint8_t pin; // Pin number (0-7)
-    uint8_t pps_reg; // PPS register value for this pin
+	uint8_t port; // Port letter (A, B, C)
+	uint8_t pin; // Pin number (0-7)
+	uint8_t pps_reg; // PPS register value for this pin
 } pwm_pin_config_t;
 
 // Macro to concatenate tokens for register naming
@@ -52,11 +52,10 @@ typedef struct {
 #define ASSIGN_PPS(port, pin, ccp_module) (*GET_PPS_REG(port, pin) = (ccp_module))
 
 // Function prototypes
-w_status_t pwm_init(
-    uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pwm_period
-); // Initializes the PWM for a specific CCP module
-w_status_t pwm_update_duty_cycle(
-    uint8_t ccp_module, uint16_t duty_cycle
-); // Updates the duty cycle of the specified CCP module
+w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config,
+					uint16_t pwm_period); // Initializes the PWM for a specific CCP module
+w_status_t
+pwm_update_duty_cycle(uint8_t ccp_module,
+					  uint16_t duty_cycle); // Updates the duty cycle of the specified CCP module
 
 #endif /* ROCKETLIB_PWM_H */
