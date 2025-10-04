@@ -14,6 +14,5 @@ The standard embedded firmware library is a common library for Waterloo Rocketry
    pwm_driver.rst
    adc_driver.rst
    low_pass_filter.rst
-   millis.rst
 
    main_func.rst
