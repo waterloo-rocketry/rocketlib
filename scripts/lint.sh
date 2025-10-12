@@ -1,3 +1,3 @@
 #!/bin/sh
 set -x
-clang-tidy common/*.c include/*.h unit_tests/*.c unit_tests/*.h
+${CLANG_TIDY:-clang-tidy} common/*.c include/*.h --warnings-as-errors="*" --checks="clang-*,misc-*" --extra-arg-before="-std=c99" --extra-arg-before="-pedantic" --extra-arg-before="-Iinclude"
