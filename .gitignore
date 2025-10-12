@@ -1,10 +1,10 @@
-doc/_build
-unit_tests/unit_test
-*.exe
 *.o
 *.d
-
-.cache
+*.gcda
+*.gcno
 compile_commands.json
-
+.cache
 .DS_Store
+tests/unit_test
+tests/coverage.info
+tests/html
