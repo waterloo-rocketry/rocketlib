@@ -4,7 +4,6 @@ name: Run Unit Tests
 on: pull_request
 
 jobs:
-  # Build job
   build:
     name: Compile and Run Tests
     runs-on: ubuntu-latest
@@ -12,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Test
         run: make
-        working-directory: unit_tests
+        working-directory: tests
       - name: Run Test
         run: ./unit_test
-        working-directory: unit_tests
+        working-directory: tests
