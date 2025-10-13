@@ -1,0 +1,23 @@
+name: XC16 Compile Check
+
+# Runs on pushes to pull request
+on: pull_request
+
+jobs:
+  xc8-compile-check:
+    name: XC16 Compile Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: Install XC16
+        run: |
+          wget https://ww1.microchip.com/downloads/aemDocuments/documents/DEV/ProductDocuments/SoftwareTools/xc16-v2.10-full-install-linux64-installer.run
+          chmod +x ./xc16-v2.10-full-install-linux64-installer.run
+          sudo ./xc16-v2.10-full-install-linux64-installer.run --mode unattended --netservername localhost --debuglevel 4
+
+      - name: Run Compile
+        run: |
+          /opt/microchip/xc16/v2.10/bin/xc16-gcc -mcpu=33EP256GP502 -Iinclude -c -std=c99 -Wall common/crc8.c common/low_pass_filter.c
