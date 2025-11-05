@@ -11,16 +11,16 @@ static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 		return W_INVALID_PARAM; // Return error if the module number is out of range
 	}
 
-	// Get TRIS register based on port (macros require compile-time constants)
+	// Get TRIS register based on port (macros require compile-time constants, so use switch)
 	switch (pin_config.port) {
 	case 'A':
-		tris_reg = &TRISAA;
+		tris_reg = &TRISA;
 		break;
 	case 'B':
-		tris_reg = &TRISBA;
+		tris_reg = &TRISB;
 		break;
 	case 'C':
-		tris_reg = &TRISCA;
+		tris_reg = &TRISC;
 		break;
 	default:
 		return W_INVALID_PARAM;
