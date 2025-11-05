@@ -8,6 +8,10 @@ static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 		return W_INVALID_PARAM; // Return error if the module number is out of range
 	}
 
+	// Extract port and pin values for macro expansion (macros require literal identifiers)
+	uint8_t port = pin_config.port;
+	uint8_t pin = pin_config.pin;
+
 	// Set the pin as output to drive PWM signal directly using the TRIS register
 	*pin_config.tris_reg &= ~(1 << pin_config.pin);
 
