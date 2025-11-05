@@ -1,3 +1,12 @@
+/**
+ * @file
+ * @brief PIC18 PWM (CCP) driver
+ *
+ * This module provides PWM functionality using the PIC18 Capture/Compare/PWM (CCP) modules.
+ * It supports up to 4 CCP modules (CCP1-CCP4) and uses Timer2 as the timebase for PWM
+ * generation.
+ */
+
 #ifndef ROCKETLIB_PWM_H
 #define ROCKETLIB_PWM_H
 
@@ -9,27 +18,47 @@
 #error "C++ is not supported"
 #endif
 
-// Structure to hold the configuration details for a PWM pin
+/**
+ * @brief Structure to hold the configuration details for a PWM pin
+ */
 typedef struct {
 	volatile uint8_t *tris_reg; // Pointer to TRIS register
 	volatile uint8_t *pps_reg; // Pointer to PPS register
 	uint8_t pin; // Pin number (0-7)
 } pwm_pin_config_t;
 
-// Macro to concatenate tokens for register naming
-// This macro concatenates three tokens together, used for constructing register names dynamically
+/**
+ * @brief Macro to concatenate tokens for register naming
+ *
+ * This macro concatenates three tokens together, used for constructing register names dynamically
+ */
 #define CONCAT(a, b, c) a##b##c
 
-// Macro to get the CCPR Low register based on module number
-// This macro forms the register name for the low byte of the Compare/Capture/PWM register
+/**
+ * @brief Macro to get the CCPR Low register based on module number
+ *
+ * This macro forms the register name for the low byte of the Compare/Capture/PWM register
+ *
+ * @param module CCP module number (1-4)
+ */
 #define CCPR_L(module) CONCAT(CCPR, module, L)
 
-// Macro to get the CCPR High register based on module number
-// This macro forms the register name for the high byte of the Compare/Capture/PWM register
+/**
+ * @brief Macro to get the CCPR High register based on module number
+ *
+ * This macro forms the register name for the high byte of the Compare/Capture/PWM register
+ *
+ * @param module CCP module number (1-4)
+ */
 #define CCPR_H(module) CONCAT(CCPR, module, H)
 
-// Macro to get the CCPxCON register based on module number
-// This macro forms the register name for the control register of the specified CCP module
+/**
+ * @brief Macro to get the CCPxCON register based on module number
+ *
+ * This macro forms the register name for the control register of the specified CCP module
+ *
+ * @param module CCP module number (1-4)
+ */
 #define CCP_CON(module) CONCAT(CCP, module, CON)
 
 // Function prototypes
