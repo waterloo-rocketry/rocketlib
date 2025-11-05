@@ -11,9 +11,9 @@
 
 // Structure to hold the configuration details for a PWM pin
 typedef struct {
-    volatile uint8_t *tris_reg; // Pointer to TRIS register
-    volatile uint8_t *pps_reg; // Pointer to PPS register
-    uint8_t pin; // Pin number (0-7)
+	volatile uint8_t *tris_reg; // Pointer to TRIS register
+	volatile uint8_t *pps_reg; // Pointer to PPS register
+	uint8_t pin; // Pin number (0-7)
 } pwm_pin_config_t;
 
 // Macro to concatenate tokens for register naming
@@ -33,9 +33,8 @@ typedef struct {
 #define CCP_CON(module) CONCAT(CCP, module, CON)
 
 // Function prototypes
-w_status_t pwm_init(
-    uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pwm_period
-); // Initializes the PWM for a specific CCP module
+w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config,
+					uint16_t pwm_period); // Initializes the PWM for a specific CCP module
 
 /**
  * Example usage:
@@ -48,8 +47,8 @@ w_status_t pwm_init(
  * pwm_init(1, config, 255);  // Initialize PWM on CCP1 with period 255
  */
 
-w_status_t pwm_update_duty_cycle(
-    uint8_t ccp_module, uint16_t duty_cycle
-); // Updates the duty cycle of the specified CCP module
+w_status_t
+pwm_update_duty_cycle(uint8_t ccp_module,
+					  uint16_t duty_cycle); // Updates the duty cycle of the specified CCP module
 
 #endif /* ROCKETLIB_PWM_H */
