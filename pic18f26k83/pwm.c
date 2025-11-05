@@ -13,17 +13,17 @@ static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 
 	// Get TRIS register based on port (macros require compile-time constants, so use switch)
 	switch (pin_config.port) {
-	case 'A':
-		tris_reg = &TRISA;
-		break;
-	case 'B':
-		tris_reg = &TRISB;
-		break;
-	case 'C':
-		tris_reg = &TRISC;
-		break;
-	default:
-		return W_INVALID_PARAM;
+		case 'A':
+			tris_reg = &TRISA;
+			break;
+		case 'B':
+			tris_reg = &TRISB;
+			break;
+		case 'C':
+			tris_reg = &TRISC;
+			break;
+		default:
+			return W_INVALID_PARAM;
 	}
 
 	// Get TRIS register based on port (macros require compile-time constants, so use switch)
@@ -32,6 +32,99 @@ static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 
 	// Get PPS register based on port and pin (macros require compile-time constants, so use switch)
 	switch (pin_config.port) {
+		case 'A':
+			switch (pin_config.pin) {
+				case 0:
+					pps_reg = &RA0PPS;
+					break;
+				case 1:
+					pps_reg = &RA1PPS;
+					break;
+				case 2:
+					pps_reg = &RA2PPS;
+					break;
+				case 3:
+					pps_reg = &RA3PPS;
+					break;
+				case 4:
+					pps_reg = &RA4PPS;
+					break;
+				case 5:
+					pps_reg = &RA5PPS;
+					break;
+				case 6:
+					pps_reg = &RA6PPS;
+					break;
+				case 7:
+					pps_reg = &RA7PPS;
+					break;
+				default:
+					return W_INVALID_PARAM;
+			}
+			break;
+		case 'B':
+			switch (pin_config.pin) {
+				case 0:
+					pps_reg = &RB0PPS;
+					break;
+				case 1:
+					pps_reg = &RB1PPS;
+					break;
+				case 2:
+					pps_reg = &RB2PPS;
+					break;
+				case 3:
+					pps_reg = &RB3PPS;
+					break;
+				case 4:
+					pps_reg = &RB4PPS;
+					break;
+				case 5:
+					pps_reg = &RB5PPS;
+					break;
+				case 6:
+					pps_reg = &RB6PPS;
+					break;
+				case 7:
+					pps_reg = &RB7PPS;
+					break;
+				default:
+					return W_INVALID_PARAM;
+			}
+			break;
+		case 'C':
+			switch (pin_config.pin) {
+				case 0:
+					pps_reg = &RC0PPS;
+					break;
+				case 1:
+					pps_reg = &RC1PPS;
+					break;
+				case 2:
+					pps_reg = &RC2PPS;
+					break;
+				case 3:
+					pps_reg = &RC3PPS;
+					break;
+				case 4:
+					pps_reg = &RC4PPS;
+					break;
+				case 5:
+					pps_reg = &RC5PPS;
+					break;
+				case 6:
+					pps_reg = &RC6PPS;
+					break;
+				case 7:
+					pps_reg = &RC7PPS;
+					break;
+				default:
+					return W_INVALID_PARAM;
+			}
+			break;
+		default:
+			return W_INVALID_PARAM;
+	}
 		case 'A':
 			tris_reg = &TRISA;
 			break;
