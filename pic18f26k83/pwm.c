@@ -13,17 +13,17 @@ static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 
 	// Get TRIS register based on port (macros require compile-time constants, so use switch)
 	switch (pin_config.port) {
-	case 'A':
-		tris_reg = &TRISA;
-		break;
-	case 'B':
-		tris_reg = &TRISB;
-		break;
-	case 'C':
-		tris_reg = &TRISC;
-		break;
-	default:
-		return W_INVALID_PARAM;
+		case 'A':
+			tris_reg = &TRISA;
+			break;
+		case 'B':
+			tris_reg = &TRISB;
+			break;
+		case 'C':
+			tris_reg = &TRISC;
+			break;
+		default:
+			return W_INVALID_PARAM;
 	}
 
 	// Set the pin as output to drive PWM signal directly using the TRIS register
