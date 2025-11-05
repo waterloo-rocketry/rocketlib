@@ -37,7 +37,7 @@ w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pw
 	PR2 = pwm_period & 0xFF; // Load lower 8 bits of PWM period into PR2 register
 	TMR2 = 0; // Reset Timer2 count to 0
 	T2CONbits.T2CKPS = 0; // Set Timer2 prescaler to 1:1 (no prescaling)
-	T2CONbits.TOUTPS = 0; // Set Timer2 postscaler to 1:1 (no postscaling)
+	T2CONbits.T2OUTPS = 0; // Set Timer2 postscaler to 1:1 (no postscaling)
 	T2CONbits.TMR2ON = 1; // Start Timer2 to begin PWM operation
 
 	// Wait for Timer2 to reach the period value before starting PWM
