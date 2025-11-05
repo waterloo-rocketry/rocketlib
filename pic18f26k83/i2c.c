@@ -2,6 +2,11 @@
 
 #include "i2c.h"
 
+#ifndef _XTAL_FREQ
+// Define crystal frequency for delay macros (default: 16 MHz)
+#define _XTAL_FREQ 16000000
+#endif
+
 /* Private function declarations */
 static void clear_i2c_buffers(void);
 static w_status_t check_i2c_state(void);
