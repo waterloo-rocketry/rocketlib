@@ -125,26 +125,26 @@ static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 		default:
 			return W_INVALID_PARAM;
 	}
-		case 'A':
-			tris_reg = &TRISA;
-			break;
-		case 'B':
-			tris_reg = &TRISB;
-			break;
-		case 'C':
-			tris_reg = &TRISC;
-			break;
-		default:
-			return W_INVALID_PARAM;
-	}
+	case 'A':
+		tris_reg = &TRISA;
+		break;
+	case 'B':
+		tris_reg = &TRISB;
+		break;
+	case 'C':
+		tris_reg = &TRISC;
+		break;
+	default:
+		return W_INVALID_PARAM;
+}
 
-	// Set the pin as output to drive PWM signal directly using the TRIS register
-	*pin_config.tris_reg &= ~(1 << pin_config.pin);
+// Set the pin as output to drive PWM signal directly using the TRIS register
+*pin_config.tris_reg &= ~(1 << pin_config.pin);
 
-	// Assign the CCP module to the corresponding PPS register directly
-	*pin_config.pps_reg = ccp_module;
+// Assign the CCP module to the corresponding PPS register directly
+*pin_config.pps_reg = ccp_module;
 
-	return W_SUCCESS; // Return success status after configuring PPS
+return W_SUCCESS; // Return success status after configuring PPS
 }
 
 // Initialize PWM for a specific CCP module
