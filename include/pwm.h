@@ -37,24 +37,27 @@ typedef struct {
 /**
  * @brief Macro to get the CCPR Low register based on module number
  *
- * This macro forms the register name for the low byte of the Compare/Capture/PWM register.
- * Takes module (CCP module number 1-4) as parameter.
+ * This macro forms the register name for the low byte of the Compare/Capture/PWM register
+ *
+ * @param module CCP module number (1-4)
  */
 #define CCPR_L(module) CONCAT(CCPR, module, L)
 
 /**
  * @brief Macro to get the CCPR High register based on module number
  *
- * This macro forms the register name for the high byte of the Compare/Capture/PWM register.
- * Takes module (CCP module number 1-4) as parameter.
+ * This macro forms the register name for the high byte of the Compare/Capture/PWM register
+ *
+ * @param module CCP module number (1-4)
  */
 #define CCPR_H(module) CONCAT(CCPR, module, H)
 
 /**
  * @brief Macro to get the CCPxCON register based on module number
  *
- * This macro forms the register name for the control register of the specified CCP module.
- * Takes module (CCP module number 1-4) as parameter.
+ * This macro forms the register name for the control register of the specified CCP module
+ *
+ * @param module CCP module number (1-4)
  */
 #define CCP_CON(module) CONCAT(CCP, module, CON)
 
