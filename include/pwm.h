@@ -28,6 +28,13 @@ typedef struct {
 } pwm_pin_config_t;
 
 /**
+ * @brief Macro to concatenate two tokens for register naming
+ *
+ * This macro concatenates two tokens together, used for constructing register names dynamically
+ */
+#define CONCAT2(a, b) a##b
+
+/**
  * @brief Macro to concatenate tokens for register naming
  *
  * This macro concatenates three tokens together, used for constructing register names dynamically
