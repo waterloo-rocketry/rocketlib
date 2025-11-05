@@ -3,14 +3,28 @@
 
 // Helper function to configure PPS registers using direct register access
 static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config) {
+	volatile uint8_t *tris_reg;
+	volatile uint8_t *pps_reg;
+
 	// Ensure the CCP module number is within valid range (1-4)
 	if (ccp_module < 1 || ccp_module > 4) {
 		return W_INVALID_PARAM; // Return error if the module number is out of range
 	}
 
-	// Extract port and pin values for macro expansion (macros require literal identifiers)
-	uint8_t port = pin_config.port;
-	uint8_t pin = pin_config.pin;
+	// Get TRIS register based on port (macros require compile-time constants)
+	switch (pin_config.port) {
+	case 'A':
+		tris_reg = &TRISAA;
+		break;
+	case 'B':
+		tris_reg = &TRISBA;
+		break;
+	case 'C':
+		tris_reg = &TRISCA;
+		break;
+	default:
+		return W_INVALID_PARAM;
+	}
 
 	// Set the pin as output to drive PWM signal directly using the TRIS register
 	*pin_config.tris_reg &= ~(1 << pin_config.pin);
