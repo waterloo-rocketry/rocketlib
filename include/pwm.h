@@ -62,29 +62,51 @@ typedef struct {
 /**
  * @brief Macro to get the CCPxCON register based on module number
  *
- * This macro forms the register name for the control register of the specified CCP module
+ * This macro forms the register name for the control register of the specified CCP module.
  *
  * @param module CCP module number (1-4)
  */
 #define CCP_CON(module) CONCAT(CCP, module, CON)
 
-// Function prototypes
-w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config,
-					uint16_t pwm_period); // Initializes the PWM for a specific CCP module
+/**
+ * @brief Initializes the PWM for a specific CCP module
+ *
+ * This function configures a CCP module for PWM operation. It sets up the pin configuration,
+ * enables PWM mode, and configures Timer2 as the timebase. The PWM period is set based on
+ * the Timer2 period register (PR2).
+ *
+ * @param ccp_module CCP module number (1-4)
+ * @param pin_config Pin configuration structure containing TRIS register pointer, PPS register
+ * pointer, and pin number
+ * @param pwm_period PWM period value (0-255) loaded into PR2 register
+ * @return w_status_t Returns W_SUCCESS on success, W_INVALID_PARAM if module number is out of range
+ */
+w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pwm_period);
 
 /**
- * Example usage:
+ * @brief Example usage:
  *
+ * @code
  * pwm_pin_config_t config;
  * config.tris_reg = &TRISA;  // Direct register pointer
  * config.pps_reg = &RA0PPS;  // Direct register pointer for PPS
  * config.pin = 0;            // Pin number (0-7)
  *
  * pwm_init(1, config, 255);  // Initialize PWM on CCP1 with period 255
+ * @endcode
  */
 
-w_status_t
-pwm_update_duty_cycle(uint8_t ccp_module,
-					  uint16_t duty_cycle); // Updates the duty cycle of the specified CCP module
+/**
+ * @brief Updates the duty cycle of the specified CCP module
+ *
+ * This function updates the PWM duty cycle for a given CCP module. The duty cycle is a 10-bit
+ * value (0-1023) where 0 represents 0% duty cycle and 1023 represents 100% duty cycle.
+ *
+ * @param ccp_module CCP module number (1-4)
+ * @param duty_cycle Duty cycle value (0-1023) for 10-bit PWM resolution
+ * @return w_status_t Returns W_SUCCESS on success, W_INVALID_PARAM if module number is out of
+ * range or duty cycle exceeds 1023
+ */
+w_status_t pwm_update_duty_cycle(uint8_t ccp_module, uint16_t duty_cycle);
 
 #endif /* ROCKETLIB_PWM_H */

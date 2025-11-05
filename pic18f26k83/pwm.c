@@ -1,7 +1,17 @@
 #include "pwm.h"
 #include <xc.h>
 
-// Helper function to configure PPS registers using direct register access
+/**
+ * @brief Helper function to configure PPS registers using direct register access
+ *
+ * This function configures the Peripheral Pin Select (PPS) registers to map a CCP module
+ * to a specific pin. It sets the pin as an output and assigns the CCP module to the PPS register.
+ *
+ * @param ccp_module CCP module number (1-4)
+ * @param pin_config Pin configuration structure containing TRIS register pointer, PPS register
+ * pointer, and pin number
+ * @return w_status_t Returns W_SUCCESS on success, W_INVALID_PARAM if module number is out of range
+ */
 static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config) {
 	// Ensure the CCP module number is within valid range (1-4)
 	if (ccp_module < 1 || ccp_module > 4) {
@@ -17,7 +27,19 @@ static w_status_t configure_pps(uint8_t ccp_module, pwm_pin_config_t pin_config)
 	return W_SUCCESS; // Return success status after configuring PPS
 }
 
-// Initialize PWM for a specific CCP module
+/**
+ * @brief Initializes the PWM for a specific CCP module
+ *
+ * This function configures a CCP module for PWM operation. It sets up the pin configuration,
+ * enables PWM mode, and configures Timer2 as the timebase. The PWM period is set based on
+ * the Timer2 period register (PR2).
+ *
+ * @param ccp_module CCP module number (1-4)
+ * @param pin_config Pin configuration structure containing TRIS register pointer, PPS register
+ * pointer, and pin number
+ * @param pwm_period PWM period value (0-255) loaded into PR2 register
+ * @return w_status_t Returns W_SUCCESS on success, W_INVALID_PARAM if module number is out of range
+ */
 w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pwm_period) {
 	// Configure PPS registers to map CCP module to the selected pin
 	w_status_t status = configure_pps(ccp_module, pin_config);
@@ -60,7 +82,17 @@ w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pw
 	return W_SUCCESS; // Return success status after PWM initialization
 }
 
-// Update the duty cycle of a specific CCP module
+/**
+ * @brief Updates the duty cycle of the specified CCP module
+ *
+ * This function updates the PWM duty cycle for a given CCP module. The duty cycle is a 10-bit
+ * value (0-1023) where 0 represents 0% duty cycle and 1023 represents 100% duty cycle.
+ *
+ * @param ccp_module CCP module number (1-4)
+ * @param duty_cycle Duty cycle value (0-1023) for 10-bit PWM resolution
+ * @return w_status_t Returns W_SUCCESS on success, W_INVALID_PARAM if module number is out of
+ * range or duty cycle exceeds 1023
+ */
 w_status_t pwm_update_duty_cycle(uint8_t ccp_module, uint16_t duty_cycle) {
 	// Validate CCP module and duty cycle range
 	if (ccp_module < 1 || ccp_module > 4 || duty_cycle > 1023) {
