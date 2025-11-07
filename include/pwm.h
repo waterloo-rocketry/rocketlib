@@ -1,3 +1,12 @@
+/**
+ * @file
+ * @brief PIC18 PWM (CCP) driver
+ *
+ * This module provides PWM functionality using the PIC18 Capture/Compare/PWM (CCP) modules.
+ * It supports up to 4 CCP modules (CCP1-CCP4) and uses Timer2 as the timebase for PWM
+ * generation.
+ */
+
 #ifndef ROCKETLIB_PWM_H
 #define ROCKETLIB_PWM_H
 
@@ -9,53 +18,95 @@
 #error "C++ is not supported"
 #endif
 
-// Structure to hold the configuration details for a PWM pin
+/**
+ * @brief Structure to hold the configuration details for a PWM pin
+ */
 typedef struct {
-	uint8_t port; // Port letter (A, B, C)
+	volatile uint8_t *tris_reg; // Pointer to TRIS register
+	volatile uint8_t *pps_reg; // Pointer to PPS register
 	uint8_t pin; // Pin number (0-7)
-	uint8_t pps_reg; // PPS register value for this pin
 } pwm_pin_config_t;
 
-// Macro to concatenate tokens for register naming
-// This macro concatenates three tokens together, used for constructing register names dynamically
+/**
+ * @brief Macro to concatenate two tokens for register naming
+ *
+ * This macro concatenates two tokens together, used for constructing register names dynamically
+ */
+#define CONCAT2(a, b) a##b
+
+/**
+ * @brief Macro to concatenate tokens for register naming
+ *
+ * This macro concatenates three tokens together, used for constructing register names dynamically
+ */
 #define CONCAT(a, b, c) a##b##c
 
-// Macro to get the CCPR Low register based on module number
-// This macro forms the register name for the low byte of the Compare/Capture/PWM register
+/**
+ * @brief Macro to get the CCPR Low register based on module number
+ *
+ * This macro forms the register name for the low byte of the Compare/Capture/PWM register
+ *
+ * @param module CCP module number (1-4)
+ */
 #define CCPR_L(module) CONCAT(CCPR, module, L)
 
-// Macro to get the CCPR High register based on module number
-// This macro forms the register name for the high byte of the Compare/Capture/PWM register
+/**
+ * @brief Macro to get the CCPR High register based on module number
+ *
+ * This macro forms the register name for the high byte of the Compare/Capture/PWM register
+ *
+ * @param module CCP module number (1-4)
+ */
 #define CCPR_H(module) CONCAT(CCPR, module, H)
 
-// Macro to get the CCPxCON register based on module number
-// This macro forms the register name for the control register of the specified CCP module
+/**
+ * @brief Macro to get the CCPxCON register based on module number
+ *
+ * This macro forms the register name for the control register of the specified CCP module.
+ *
+ * @param module CCP module number (1-4)
+ */
 #define CCP_CON(module) CONCAT(CCP, module, CON)
 
-// Macro to get the TRIS register based on port letter
-// TRIS registers control the direction of pins (input or output)
-// This macro dynamically constructs the TRIS register name for a given port
-#define GET_TRIS_REG(port) CONCAT(TRIS, port, A)
+/**
+ * @brief Initializes the PWM for a specific CCP module
+ *
+ * This function configures a CCP module for PWM operation. It sets up the pin configuration,
+ * enables PWM mode, and configures Timer2 as the timebase. The PWM period is set based on
+ * the Timer2 period register (PR2).
+ *
+ * @param ccp_module CCP module number (1-4)
+ * @param pin_config Pin configuration structure containing TRIS register pointer, PPS register
+ * pointer, and pin number
+ * @param pwm_period PWM period value (0-255) loaded into PR2 register
+ * @return w_status_t Returns W_SUCCESS on success, W_INVALID_PARAM if module number is out of range
+ */
+w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pwm_period);
 
-// Macro to get the PPS register address based on port and pin
-// PPS (Peripheral Pin Select) allows mapping of peripherals to different pins
-// This macro forms the PPS register name for a given port and pin
-#define GET_PPS_REG(port, pin) CONCAT(R, port, pin##PPS)
+/**
+ * @brief Example usage:
+ *
+ * @code
+ * pwm_pin_config_t config;
+ * config.tris_reg = &TRISA;  // Direct register pointer
+ * config.pps_reg = &RA0PPS;  // Direct register pointer for PPS
+ * config.pin = 0;            // Pin number (0-7)
+ *
+ * pwm_init(1, config, 255);  // Initialize PWM on CCP1 with period 255
+ * @endcode
+ */
 
-// Macro to set the TRIS register for a specific pin
-// This macro configures the specified pin as an output by clearing the corresponding bit in the
-// TRIS register
-#define SET_TRIS_OUTPUT(port, pin) (GET_TRIS_REG(port) &= ~(1 << (pin)))
-
-// Macro to assign the CCP module to the PPS register
-// This macro assigns the CCP module to a specific pin by writing to the PPS register
-#define ASSIGN_PPS(port, pin, ccp_module) (*GET_PPS_REG(port, pin) = (ccp_module))
-
-// Function prototypes
-w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config,
-					uint16_t pwm_period); // Initializes the PWM for a specific CCP module
-w_status_t
-pwm_update_duty_cycle(uint8_t ccp_module,
-					  uint16_t duty_cycle); // Updates the duty cycle of the specified CCP module
+/**
+ * @brief Updates the duty cycle of the specified CCP module
+ *
+ * This function updates the PWM duty cycle for a given CCP module. The duty cycle is a 10-bit
+ * value (0-1023) where 0 represents 0% duty cycle and 1023 represents 100% duty cycle.
+ *
+ * @param ccp_module CCP module number (1-4)
+ * @param duty_cycle Duty cycle value (0-1023) for 10-bit PWM resolution
+ * @return w_status_t Returns W_SUCCESS on success, W_INVALID_PARAM if module number is out of
+ * range or duty cycle exceeds 1023
+ */
+w_status_t pwm_update_duty_cycle(uint8_t ccp_module, uint16_t duty_cycle);
 
 #endif /* ROCKETLIB_PWM_H */
