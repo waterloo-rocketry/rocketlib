@@ -1,17 +1,4 @@
-#include <stdio.h>
-
-#include "lfs.h"
-#include "main.h"
-
-const uint32_t MAX_FILE_SIZE = 1 << 31;
-
-// variables used by the filesystem
-lfs_t lfs;
-lfs_file_t video_file;
-
-uint32_t root_dir_files;
-
-video_state_t state;
+extern SD_HandleTypeDef* lfs_shim_hsd;
 
 int sd_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
 			lfs_size_t size) {
@@ -19,14 +6,14 @@ int sd_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *
 	uint32_t block_addr = block;
 	uint32_t num_blocks = (size + c->block_size - 1) / c->block_size;
 	HAL_StatusTypeDef hal =
-		HAL_SD_ReadBlocks(&hsd2, (uint8_t *)buffer, block_addr, num_blocks, timeout_ms);
+		HAL_SD_ReadBlocks(&lfs_shim_hsd, (uint8_t *)buffer, block_addr, num_blocks, timeout_ms);
 	if (hal != HAL_OK) {
 		return -1; // LFS_ERR_IO
 	}
 
 	// Wait for card to be ready (polling)
 	uint32_t start = HAL_GetTick();
-	while (HAL_SD_GetCardState(&hsd2) != HAL_SD_CARD_TRANSFER) {
+	while (HAL_SD_GetCardState(&lfs_shim_hsd) != HAL_SD_CARD_TRANSFER) {
 		if ((HAL_GetTick() - start) > timeout_ms) {
 			return -1; // timeout -> LFS_ERR_IO
 		}
@@ -41,14 +28,14 @@ int sd_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const
 	uint32_t block_addr = block;
 	uint32_t num_blocks = (size + c->block_size - 1) / c->block_size;
 	HAL_StatusTypeDef hal =
-		HAL_SD_WriteBlocks(&hsd2, (uint8_t *)buffer, block_addr, num_blocks, timeout_ms);
+		HAL_SD_WriteBlocks(&lfs_shim_hsd, (uint8_t *)buffer, block_addr, num_blocks, timeout_ms);
 	if (hal != HAL_OK) {
 		return -1; // LFS_ERR_IO
 	}
 
 	// Wait for card to be ready (polling)
 	uint32_t start = HAL_GetTick();
-	while (HAL_SD_GetCardState(&hsd2) != HAL_SD_CARD_TRANSFER) {
+	while (HAL_SD_GetCardState(&lfs_shim_hsd) != HAL_SD_CARD_TRANSFER) {
 		if ((HAL_GetTick() - start) > timeout_ms) {
 			return -1; // timeout -> LFS_ERR_IO
 		}
