@@ -11,6 +11,8 @@ extern "C" {
 // External SD handle used by the shim
 extern SD_HandleTypeDef* lfs_shim_hsd;
 
+extern uint32_t first_sector_offset;
+
 // LittleFS-compatible SD card interface functions
 int sd_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off,
             void *buffer, lfs_size_t size);
