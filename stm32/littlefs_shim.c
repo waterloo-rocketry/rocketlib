@@ -6,8 +6,8 @@ uint32_t first_sector_offset = 0;
 
 int sd_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
 			lfs_size_t size) {
-	uint32_t timeout_ms = 2000U;
-	uint32_t block_addr = block;
+	uint32_t timeout_ms = 50U;
+	uint32_t block_addr = block + first_sector_offset;
 	uint32_t num_blocks = (size + c->block_size - 1) / c->block_size;
 	HAL_StatusTypeDef hal =
 		HAL_SD_ReadBlocks(lfs_shim_hsd, (uint8_t *)buffer, block_addr, num_blocks, timeout_ms);
@@ -28,8 +28,8 @@ int sd_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *
 
 int sd_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
 			 lfs_size_t size) {
-	uint32_t timeout_ms = 2000U;
-	uint32_t block_addr = block;
+	uint32_t timeout_ms = 50U;
+	uint32_t block_addr = block + first_sector_offset;
 	uint32_t num_blocks = (size + c->block_size - 1) / c->block_size;
 	HAL_StatusTypeDef hal =
 		HAL_SD_WriteBlocks(lfs_shim_hsd, (uint8_t *)buffer, block_addr, num_blocks, timeout_ms);
