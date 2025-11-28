@@ -15,6 +15,7 @@ int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, v
 	uint32_t num_blocks = size / c->block_size;
 	w_assert((size % c->block_size) == 0);
 	w_assert(off == 0);
+
 	HAL_StatusTypeDef hal =
 		HAL_SD_ReadBlocks(lfsshim_hsd, (uint8_t *)buffer, block_addr, num_blocks, timeout_ms);
 	if (hal != HAL_OK) {
@@ -37,13 +38,9 @@ int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, 
 	uint32_t timeout_ms = SD_RW_TIMEOUT_MS;
 	uint32_t block_addr = block + lfsshim_first_block_offset;
 	//uint32_t num_blocks = (size + c->block_size - 1) / c->block_size;
-	uint32_t num_blocks = 1;
-	if(size != 512){
-		for(;;){}
-	}
-	if(off != 0){
-		for(;;){}
-	}
+	uint32_t num_blocks = size / c->block_size;
+	w_assert((size % c->block_size) == 0);
+	w_assert(off == 0);
 
 	HAL_StatusTypeDef hal =
 		HAL_SD_WriteBlocks(lfsshim_hsd, (uint8_t *)buffer, block_addr, num_blocks, timeout_ms);
