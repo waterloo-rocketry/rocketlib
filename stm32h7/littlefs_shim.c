@@ -25,7 +25,7 @@ int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, v
 	// Wait for card to be ready (polling)
 	uint32_t start = HAL_GetTick();
 	while (HAL_SD_GetCardState(lfsshim_hsd) != HAL_SD_CARD_TRANSFER) {
-		if ((HAL_GetTick() - start) > timeout_ms) {
+		if ((HAL_GetTick() - start) > SD_RW_TIMEOUT_MS) {
 			return -1; // timeout -> LFS_ERR_IO
 		}
 	}
@@ -51,7 +51,7 @@ int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, 
 	// Wait for card to be ready (polling)
 	uint32_t start = HAL_GetTick();
 	while (HAL_SD_GetCardState(lfsshim_hsd) != HAL_SD_CARD_TRANSFER) {
-		if ((HAL_GetTick() - start) > timeout_ms) {
+		if ((HAL_GetTick() - start) > SD_RW_TIMEOUT_MS) {
 			return -1; // timeout -> LFS_ERR_IO
 		}
 	}
