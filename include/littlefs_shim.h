@@ -1,31 +1,34 @@
-#ifndef SD_LFS_SHIM_H
-#define SD_LFS_SHIM_H
+#ifndef ROCKETLIB_LITTLEFS_SHIM_H
+#define ROCKETLIB_LITTLEFS_SHIM_H
 
 #include "lfs.h"
-#include "stm32h7xx_hal.h" // or appropriate HAL header for your MCU
+#include "stm32h7xx_hal_sd.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// External SD handle used by the shim
-extern SD_HandleTypeDef *lfs_shim_hsd;
+// Timeout for SD read/write operations (ms)
+#define SD_RW_TIMEOUT_MS 50U
 
-extern uint32_t first_sector_offset;
+// External SD handle used by the shim
+extern SD_HandleTypeDef *lfsshim_hsd;
+
+extern uint32_t lfsshim_first_block_offset;
 
 // LittleFS-compatible SD card interface functions
-int sd_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
-			lfs_size_t size);
+int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
+				 lfs_size_t size);
 
-int sd_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
-			 lfs_size_t size);
+int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
+				  lfs_size_t size);
 
-int sd_erase(const struct lfs_config *c, lfs_block_t block);
+int lfsshim_erase(const struct lfs_config *c, lfs_block_t block);
 
-int sd_sync(const struct lfs_config *c);
+int lfsshim_sync(const struct lfs_config *c);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // SD_LFS_SHIM_H
+#endif // ROCKETLIB_LITTLEFS_SHIM_H
