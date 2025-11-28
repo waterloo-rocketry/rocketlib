@@ -8,9 +8,6 @@
 extern "C" {
 #endif
 
-// Timeout for SD read/write operations (ms)
-#define SD_RW_TIMEOUT_MS 50U
-
 // External SD handle used by the shim
 extern SD_HandleTypeDef *lfsshim_hsd;
 
