@@ -14,15 +14,7 @@ extern SD_HandleTypeDef *lfsshim_hsd;
 extern uint32_t lfsshim_first_block_offset;
 
 // LittleFS-compatible SD card interface functions
-int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
-				 lfs_size_t size);
-
-int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
-				  lfs_size_t size);
-
-int lfsshim_erase(const struct lfs_config *c, lfs_block_t block);
-
-int lfsshim_sync(const struct lfs_config *c);
+int lfsshim_mount(lfs_t *lfs);
 
 #ifdef __cplusplus
 }
