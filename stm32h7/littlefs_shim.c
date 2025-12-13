@@ -91,7 +91,7 @@ const struct lfs_config cfg = {
 	.metadata_max = 0,
 	.inline_max = -1};
 
-int lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset) {
+w_status_t lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset) {
 	memset(lfs, 0, sizeof(lfs_t));
 
 	lfsshim_hsd = hsd;
@@ -101,10 +101,10 @@ int lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset
 		return W_IO_ERROR;
 	}
 
-	return 0; // success
+	return W_SUCCESS;
 }
 
-int lfsshim_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd) {
+w_status_t lfsshim_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd) {
 	uint8_t mbr_sector[512];
 
 	HAL_StatusTypeDef hal = HAL_SD_ReadBlocks(hsd, mbr_sector, 0, 1, 50U);
@@ -121,5 +121,5 @@ int lfsshim_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd) {
 	if (lfsshim_mount(lfs, hsd, first_block_offset) != 0) {
 		return W_IO_ERROR;
 	}
-	return 0;
+	return W_SUCCESS;
 }
