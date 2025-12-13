@@ -1,8 +1,9 @@
 #include "common.h"
 #include "lfs.h"
+#include "mbr.h"
 #include "stm32h7xx_hal.h"
 
-#define SD_RW_TIMEOUT_MS 500
+#define SD_RW_TIMEOUT_MS 50
 
 static SD_HandleTypeDef *lfsshim_hsd;
 static uint32_t lfsshim_first_block_offset = 0;
@@ -101,4 +102,24 @@ int lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset
 	}
 
 	return 0; // success
+}
+
+int lfsshim_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd) {
+	uint8_t mbr_sector[512];
+
+	HAL_StatusTypeDef hal = HAL_SD_ReadBlocks(hsd, mbr_sector, 0, 1, 50U);
+	if (hal != HAL_OK) {
+		return W_FAILURE;
+	}
+
+	uint32_t first_block_offset = 0;
+	w_status_t status;
+	if ((status = mbr_parse(mbr_sector, 0x83, &first_block_offset)) != W_SUCCESS) {
+		return status;
+	}
+
+	if (lfsshim_mount(lfs, hsd, first_block_offset) != 0) {
+		return W_IO_ERROR;
+	}
+	return 0;
 }
