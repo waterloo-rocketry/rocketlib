@@ -1,14 +1,15 @@
 #include "common.h"
 #include "lfs.h"
+#include "mbr.h"
 #include "stm32h7xx_hal.h"
 
 #define SD_RW_TIMEOUT_MS 50
 
-SD_HandleTypeDef *lfsshim_hsd;
-uint32_t lfsshim_first_block_offset = 0;
+static SD_HandleTypeDef *lfsshim_hsd;
+static uint32_t lfsshim_first_block_offset = 0;
 
-int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
-				 lfs_size_t size) {
+static int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
+						lfs_size_t size) {
 	uint32_t block_addr = block + lfsshim_first_block_offset;
 
 	w_assert((size % c->block_size) == 0);
@@ -33,8 +34,8 @@ int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, v
 	return 0; // success
 }
 
-int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
-				  lfs_size_t size) {
+static int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off,
+						 const void *buffer, lfs_size_t size) {
 	uint32_t block_addr = block + lfsshim_first_block_offset;
 
 	w_assert((size % c->block_size) == 0);
@@ -59,10 +60,66 @@ int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, 
 	return 0; // success
 }
 
-int lfsshim_erase(const struct lfs_config *c, lfs_block_t block) {
+static int lfsshim_erase(const struct lfs_config *c, lfs_block_t block) {
 	return 0; // SD does not require explicit erase
 }
 
-int lfsshim_sync(const struct lfs_config *c) {
+static int lfsshim_sync(const struct lfs_config *c) {
 	return 0;
+}
+
+// configuration of the filesystem is provided by this struct
+const struct lfs_config cfg = {
+	// block device operations
+	.read = lfsshim_read,
+	.prog = lfsshim_write,
+	.erase = lfsshim_erase,
+	.sync = lfsshim_sync,
+
+	// block device configuration
+	.read_size = 512,
+	.prog_size = 512,
+	.block_size = 512,
+	.block_count = 0,
+	.block_cycles = -1,
+	.cache_size = 512,
+	.lookahead_size = 512,
+	.compact_thresh = -1,
+	.name_max = 0,
+	.file_max = 0,
+	.attr_max = 0,
+	.metadata_max = 0,
+	.inline_max = -1};
+
+w_status_t lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset) {
+	memset(lfs, 0, sizeof(lfs_t));
+
+	lfsshim_hsd = hsd;
+	lfsshim_first_block_offset = first_block_offset;
+
+	if (lfs_mount(lfs, &cfg) != 0) {
+		return W_IO_ERROR;
+	}
+
+	return W_SUCCESS;
+}
+
+w_status_t lfsshim_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd) {
+	uint8_t mbr_sector[512];
+
+	HAL_StatusTypeDef hal = HAL_SD_ReadBlocks(hsd, mbr_sector, 0, 1, 50U);
+	if (hal != HAL_OK) {
+		return W_FAILURE;
+	}
+
+	uint32_t first_block_offset = 0;
+	w_status_t status;
+	if ((status = mbr_parse(mbr_sector, 0x83, &first_block_offset)) != W_SUCCESS) {
+		return status;
+	}
+
+	if (lfsshim_mount(lfs, hsd, first_block_offset) != 0) {
+		return W_IO_ERROR;
+	}
+	return W_SUCCESS;
 }
