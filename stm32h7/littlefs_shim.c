@@ -8,7 +8,7 @@ SD_HandleTypeDef *lfsshim_hsd;
 uint32_t lfsshim_first_block_offset = 0;
 
 static int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
-			lfs_size_t size) {
+						lfs_size_t size) {
 	uint32_t block_addr = block + lfsshim_first_block_offset;
 
 	w_assert((size % c->block_size) == 0);
@@ -33,8 +33,8 @@ static int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t
 	return 0; // success
 }
 
-static int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
-			 lfs_size_t size) {
+static int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off,
+						 const void *buffer, lfs_size_t size) {
 	uint32_t block_addr = block + lfsshim_first_block_offset;
 
 	w_assert((size % c->block_size) == 0);
@@ -67,7 +67,6 @@ static int lfsshim_sync(const struct lfs_config *c) {
 	return 0;
 }
 
-
 // configuration of the filesystem is provided by this struct
 const struct lfs_config cfg = {
 	// block device operations
@@ -95,8 +94,7 @@ int lfsshim_mount(lfs_t *lfs) {
 	memset(lfs, 0, sizeof(lfs_t));
 
 	if (lfs_mount(lfs, &cfg) != 0) {
-			return W_IO_ERROR;
+		return W_IO_ERROR;
 	}
 	return 0; // success
-
 }
