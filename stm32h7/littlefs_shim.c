@@ -4,8 +4,8 @@
 
 #define SD_RW_TIMEOUT_MS 50
 
-SD_HandleTypeDef *lfsshim_hsd;
-uint32_t lfsshim_first_block_offset = 0;
+static SD_HandleTypeDef *lfsshim_hsd;
+static uint32_t lfsshim_first_block_offset = 0;
 
 static int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
 						lfs_size_t size) {
@@ -90,11 +90,15 @@ const struct lfs_config cfg = {
 	.metadata_max = 0,
 	.inline_max = -1};
 
-int lfsshim_mount(lfs_t *lfs) {
+int lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset) {
 	memset(lfs, 0, sizeof(lfs_t));
 
 	if (lfs_mount(lfs, &cfg) != 0) {
 		return W_IO_ERROR;
 	}
+
+	lfsshim_hsd = hsd;
+	lfsshim_first_block_offset = first_block_offset;
+
 	return 0; // success
 }
