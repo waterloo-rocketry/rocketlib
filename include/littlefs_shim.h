@@ -8,13 +8,8 @@
 extern "C" {
 #endif
 
-// External SD handle used by the shim
-extern SD_HandleTypeDef *lfsshim_hsd;
-
-extern uint32_t lfsshim_first_block_offset;
-
 // LittleFS-compatible SD card interface functions
-int lfsshim_mount(lfs_t *lfs);
+int lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset);
 
 #ifdef __cplusplus
 }

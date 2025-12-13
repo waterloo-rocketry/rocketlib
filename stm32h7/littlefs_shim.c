@@ -2,7 +2,7 @@
 #include "lfs.h"
 #include "stm32h7xx_hal.h"
 
-#define SD_RW_TIMEOUT_MS 50
+#define SD_RW_TIMEOUT_MS 500
 
 static SD_HandleTypeDef *lfsshim_hsd;
 static uint32_t lfsshim_first_block_offset = 0;
