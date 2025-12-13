@@ -93,12 +93,12 @@ const struct lfs_config cfg = {
 int lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset) {
 	memset(lfs, 0, sizeof(lfs_t));
 
+	lfsshim_hsd = hsd;
+	lfsshim_first_block_offset = first_block_offset;
+
 	if (lfs_mount(lfs, &cfg) != 0) {
 		return W_IO_ERROR;
 	}
-
-	lfsshim_hsd = hsd;
-	lfsshim_first_block_offset = first_block_offset;
 
 	return 0; // success
 }
