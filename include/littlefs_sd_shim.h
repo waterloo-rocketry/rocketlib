@@ -9,8 +9,8 @@ extern "C" {
 #endif
 
 // LittleFS-compatible SD card interface functions
-int lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset);
-int lfsshim_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd);
+int lfsshim_sd_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset);
+int lfsshim_sd_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd);
 
 #ifdef __cplusplus
 }

@@ -8,7 +8,7 @@
 static SD_HandleTypeDef *lfsshim_hsd;
 static uint32_t lfsshim_first_block_offset = 0;
 
-static int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
+static int lfsshim_sd_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
 						lfs_size_t size) {
 	uint32_t block_addr = block + lfsshim_first_block_offset;
 
@@ -34,7 +34,7 @@ static int lfsshim_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t
 	return 0; // success
 }
 
-static int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off,
+static int lfsshim_sd_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off,
 						 const void *buffer, lfs_size_t size) {
 	uint32_t block_addr = block + lfsshim_first_block_offset;
 
@@ -60,21 +60,21 @@ static int lfsshim_write(const struct lfs_config *c, lfs_block_t block, lfs_off_
 	return 0; // success
 }
 
-static int lfsshim_erase(const struct lfs_config *c, lfs_block_t block) {
+static int lfsshim_sd_erase(const struct lfs_config *c, lfs_block_t block) {
 	return 0; // SD does not require explicit erase
 }
 
-static int lfsshim_sync(const struct lfs_config *c) {
+static int lfsshim_sd_sync(const struct lfs_config *c) {
 	return 0;
 }
 
 // configuration of the filesystem is provided by this struct
 const struct lfs_config cfg = {
 	// block device operations
-	.read = lfsshim_read,
-	.prog = lfsshim_write,
-	.erase = lfsshim_erase,
-	.sync = lfsshim_sync,
+	.read = lfsshim_sd_read,
+	.prog = lfsshim_sd_write,
+	.erase = lfsshim_sd_erase,
+	.sync = lfsshim_sd_sync,
 
 	// block device configuration
 	.read_size = 512,
@@ -91,7 +91,7 @@ const struct lfs_config cfg = {
 	.metadata_max = 0,
 	.inline_max = -1};
 
-w_status_t lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset) {
+w_status_t lfsshim_sd_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset) {
 	memset(lfs, 0, sizeof(lfs_t));
 
 	lfsshim_hsd = hsd;
@@ -104,7 +104,7 @@ w_status_t lfsshim_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block
 	return W_SUCCESS;
 }
 
-w_status_t lfsshim_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd) {
+w_status_t lfsshim_sd_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd) {
 	uint8_t mbr_sector[512];
 
 	HAL_StatusTypeDef hal = HAL_SD_ReadBlocks(hsd, mbr_sector, 0, 1, 50U);
@@ -118,7 +118,7 @@ w_status_t lfsshim_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd) {
 		return status;
 	}
 
-	if (lfsshim_mount(lfs, hsd, first_block_offset) != 0) {
+	if (lfsshim_sd_mount(lfs, hsd, first_block_offset) != 0) {
 		return W_IO_ERROR;
 	}
 	return W_SUCCESS;
