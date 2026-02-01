@@ -5,12 +5,12 @@
 
 #define SD_RW_TIMEOUT_MS 50
 
-static SD_HandleTypeDef *lfsshim_hsd;
-static uint32_t lfsshim_first_block_offset = 0;
+static SD_HandleTypeDef *lfsshim_sd_hsd;
+static uint32_t lfsshim_sd_first_block_offset = 0;
 
 static int lfsshim_sd_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer,
 						lfs_size_t size) {
-	uint32_t block_addr = block + lfsshim_first_block_offset;
+	uint32_t block_addr = block + lfsshim_sd_first_block_offset;
 
 	w_assert((size % c->block_size) == 0);
 	w_assert(off == 0);
@@ -18,14 +18,14 @@ static int lfsshim_sd_read(const struct lfs_config *c, lfs_block_t block, lfs_of
 	uint32_t num_blocks = size / c->block_size;
 
 	HAL_StatusTypeDef hal =
-		HAL_SD_ReadBlocks(lfsshim_hsd, (uint8_t *)buffer, block_addr, num_blocks, SD_RW_TIMEOUT_MS);
+		HAL_SD_ReadBlocks(lfsshim_sd_hsd, (uint8_t *)buffer, block_addr, num_blocks, SD_RW_TIMEOUT_MS);
 	if (hal != HAL_OK) {
 		return -1; // LFS_ERR_IO
 	}
 
 	// Wait for card to be ready (polling)
 	uint32_t start = HAL_GetTick();
-	while (HAL_SD_GetCardState(lfsshim_hsd) != HAL_SD_CARD_TRANSFER) {
+	while (HAL_SD_GetCardState(lfsshim_sd_hsd) != HAL_SD_CARD_TRANSFER) {
 		if ((HAL_GetTick() - start) > SD_RW_TIMEOUT_MS) {
 			return -1; // timeout -> LFS_ERR_IO
 		}
@@ -36,7 +36,7 @@ static int lfsshim_sd_read(const struct lfs_config *c, lfs_block_t block, lfs_of
 
 static int lfsshim_sd_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t off,
 						 const void *buffer, lfs_size_t size) {
-	uint32_t block_addr = block + lfsshim_first_block_offset;
+	uint32_t block_addr = block + lfsshim_sd_first_block_offset;
 
 	w_assert((size % c->block_size) == 0);
 	w_assert(off == 0);
@@ -44,14 +44,14 @@ static int lfsshim_sd_write(const struct lfs_config *c, lfs_block_t block, lfs_o
 	uint32_t num_blocks = size / c->block_size;
 
 	HAL_StatusTypeDef hal = HAL_SD_WriteBlocks(
-		lfsshim_hsd, (uint8_t *)buffer, block_addr, num_blocks, SD_RW_TIMEOUT_MS);
+		lfsshim_sd_hsd, (uint8_t *)buffer, block_addr, num_blocks, SD_RW_TIMEOUT_MS);
 	if (hal != HAL_OK) {
 		return -1; // LFS_ERR_IO
 	}
 
 	// Wait for card to be ready (polling)
 	uint32_t start = HAL_GetTick();
-	while (HAL_SD_GetCardState(lfsshim_hsd) != HAL_SD_CARD_TRANSFER) {
+	while (HAL_SD_GetCardState(lfsshim_sd_hsd) != HAL_SD_CARD_TRANSFER) {
 		if ((HAL_GetTick() - start) > SD_RW_TIMEOUT_MS) {
 			return -1; // timeout -> LFS_ERR_IO
 		}
@@ -94,8 +94,8 @@ const struct lfs_config cfg = {
 w_status_t lfsshim_sd_mount(lfs_t *lfs, SD_HandleTypeDef *hsd, uint32_t first_block_offset) {
 	memset(lfs, 0, sizeof(lfs_t));
 
-	lfsshim_hsd = hsd;
-	lfsshim_first_block_offset = first_block_offset;
+	lfsshim_sd_hsd = hsd;
+	lfsshim_sd_first_block_offset = first_block_offset;
 
 	if (lfs_mount(lfs, &cfg) != 0) {
 		return W_IO_ERROR;
