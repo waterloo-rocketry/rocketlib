@@ -1,5 +1,5 @@
-#ifndef ROCKETLIB_LITTLEFS_SHIM_H
-#define ROCKETLIB_LITTLEFS_SHIM_H
+#ifndef ROCKETLIB_LITTLEFS_SD_SHIM_H
+#define ROCKETLIB_LITTLEFS_SD_SHIM_H
 
 #include "lfs.h"
 #include "stm32h7xx_hal_sd.h"
@@ -16,4 +16,4 @@ int lfsshim_sd_mount_mbr(lfs_t *lfs, SD_HandleTypeDef *hsd);
 }
 #endif
 
-#endif // ROCKETLIB_LITTLEFS_SHIM_H
+#endif // ROCKETLIB_LITTLEFS_SD_SHIM_H
