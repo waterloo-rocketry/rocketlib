@@ -59,13 +59,12 @@ QSPI_CommandTypeDef CMD_BASE_QSPI = {.Instruction = 0x0;
 }
 ;
 
-static HAL_StatusTypeDef mx25l_exit_qpi(void)
-{
-    QSPI_CommandTypeDef cmd = CMD_BASE_QSPI;
-    cmd.Instruction = MX_CMD_RSTQIO;  // 0xF5
-    cmd.DataMode    = QSPI_DATA_NONE;
-    cmd.NbData      = 0;
-    return HAL_QSPI_Command(&hqspi, &cmd, Timeout);
+static HAL_StatusTypeDef mx25l_exit_qpi(void) {
+	QSPI_CommandTypeDef cmd = CMD_BASE_QSPI;
+	cmd.Instruction = MX_CMD_RSTQIO; // 0xF5
+	cmd.DataMode = QSPI_DATA_NONE;
+	cmd.NbData = 0;
+	return HAL_QSPI_Command(&hqspi, &cmd, Timeout);
 }
 
 // Enable QSPI mode on the flash
@@ -92,7 +91,7 @@ HAL_StatusTypeDef mx25l_enter_qpi(void) {
 // 	cmd.InstructionMode = QSPI_INSTRUCTION_1_LINE;
 // 	cmd.Instruction = MX_CMD_RDSR;
 // 	cmd.AddressMode = QSPI_ADDRESS_NONE;
-// 	cmd.DataMode = QSPI_DATA_1_LINE; 
+// 	cmd.DataMode = QSPI_DATA_1_LINE;
 // 	cmd.NbData = 1;
 // 	cmd.DummyCycles = 0;
 // 	cmd.DdrMode = QSPI_DDR_MODE_DISABLE;
@@ -110,9 +109,6 @@ HAL_StatusTypeDef mx25l_enter_qpi(void) {
 // 	return HAL_QSPI_AutoPolling(&hqspi, &cmd, &cfg, Timeout);
 // }
 
-
-
-
 int main(void) {
 	HAL_Init();
 	SystemClock_Config();
@@ -127,7 +123,6 @@ int main(void) {
 	mx25l_enter_qpi();
 
 	// From now on instruction becomes 4 lines since qspi is enabled, QSPI_CMD_BASE
-
 
 	while (1) {}
 }
