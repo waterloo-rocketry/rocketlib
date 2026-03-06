@@ -1,5 +1,3 @@
-ROCKETLIB_PATH := ..
-
 CFLAGS := \
 	-std=c99 \
 	-Wall \
@@ -7,7 +5,7 @@ CFLAGS := \
 	-pedantic \
 	-MMD \
 	-DUNIT_TEST \
-	-I$(ROCKETLIB_PATH)/include
+	-Iinclude
 
 CXXFLAGS := \
 	-std=c++20 \
@@ -16,7 +14,8 @@ CXXFLAGS := \
 	-pedantic \
 	-MMD \
 	-DUNIT_TEST \
-	-I$(ROCKETLIB_PATH)/include
+	-Iinclude \
+	-Irockettest
 
 ifeq ($(COVERAGE), 1)
 
@@ -47,15 +46,15 @@ CXXFLAGS += -O2
 endif
 
 ROCKETLIB_SRCS := \
-	$(ROCKETLIB_PATH)/common/crc8.c \
-	$(ROCKETLIB_PATH)/common/low_pass_filter.c \
-	$(ROCKETLIB_PATH)/common/mbr.c
+	common/crc8.c \
+	common/low_pass_filter.c \
+	common/mbr.c
 
 TEST_SRCS := \
-	rockettest.cpp \
-	test_crc8.cpp \
-	test_low_pass_filter.cpp \
-	test_mbr.cpp
+	rockettest/rockettest.cpp \
+	tests/test_crc8.cpp \
+	tests/test_low_pass_filter.cpp \
+	tests/test_mbr.cpp
 
 ROCKETLIB_OBJS = $(ROCKETLIB_SRCS:.c=.o)
 ROCKETLIB_DEPS = $(ROCKETLIB_SRCS:.c=.d)
