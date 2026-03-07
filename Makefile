@@ -26,7 +26,7 @@ STM32H7_C_SRCS := \
 STM32H7_C_HEADERS := \
 	include/stm32/littlefs_sd_shim.h
 
-INCLUDE_PATH := \
+INCLUDE_PATHS := \
 	include
 
 TEST_SRCS := \
@@ -34,6 +34,12 @@ TEST_SRCS := \
 	tests/test_low_pass_filter.cpp \
 	tests/test_mbr.cpp
 
-ROCKETTEST_PATH := rockettest
+ROCKETTEST_SRCS := \
+	rockettest/rockettest.cpp
+
+ROCKETTEST_HEADERS := \
+	rockettest/rockettest.hpp
+
+ROCKETTEST_INCLUDE_PATH := rockettest
 
 include flows/firmware-library.mk
