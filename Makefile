@@ -1,3 +1,13 @@
+COMMON_C_SRCS := \
+	common/crc8.c \
+	common/low_pass_filter.c \
+	common/mbr.c
+
+TEST_SRCS := \
+	tests/test_crc8.cpp \
+	tests/test_low_pass_filter.cpp \
+	tests/test_mbr.cpp
+
 CFLAGS := \
 	-std=c99 \
 	-Wall \
@@ -45,46 +55,54 @@ CXXFLAGS += -O2
 
 endif
 
-ROCKETLIB_SRCS := \
-	common/crc8.c \
-	common/low_pass_filter.c \
-	common/mbr.c
-
-TEST_SRCS := \
+CPP_SRCS := \
 	rockettest/rockettest.cpp \
-	tests/test_crc8.cpp \
-	tests/test_low_pass_filter.cpp \
-	tests/test_mbr.cpp
+	$(TEST_SRCS)
 
-ROCKETLIB_OBJS = $(ROCKETLIB_SRCS:.c=.o)
-ROCKETLIB_DEPS = $(ROCKETLIB_SRCS:.c=.d)
+ifeq ($(COVERAGE), 1)
+BUILD_DIR := build-cov
+else
+BUILD_DIR := build
+endif
 
-TEST_OBJS = $(TEST_SRCS:.cpp=.o)
-TEST_DEPS = $(TEST_SRCS:.cpp=.d)
+COMMON_C_OBJS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(COMMON_C_SRCS))
+COMMON_C_DEPS = $(COMMON_C_SRCS:.c=.d)
 
-unit_test: $(ROCKETLIB_OBJS) $(TEST_OBJS)
+CPP_OBJS = $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(CPP_SRCS))
+CPP_DEPS = $(CPP_SRCS:.cpp=.d)
+
+$(BUILD_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/unit_test: $(COMMON_C_OBJS) $(CPP_OBJS)
+	@mkdir -p $(dir $@)
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 .PHONY: run_test
-run_test: unit_test
-	./unit_test
+run_test: $(BUILD_DIR)/unit_test
+	./$(BUILD_DIR)/unit_test
 
 ifeq ($(COVERAGE), 1)
 
 coverage.info: run_test
-	lcov --capture --branch-coverage --no-external --directory ../common --directory . -o $@
+	lcov --capture --branch-coverage --mcdc-coverage --no-external --directory ../common --directory . -o $@
 
 coverage-filtered.info: coverage.info
-	lcov --remove $^ "*/tests/*" -o $@ --branch-coverage
+	lcov --remove $^ "*/tests/*" -o $@ --branch-coverage --mcdc-coverage
 
 html: coverage-filtered.info
-	genhtml $^ --flat --branch-coverage --output-directory $@
+	genhtml $^ --flat --branch-coverage --mcdc-coverage --output-directory $@
 
 endif
 
--include $(ROCKETLIB_DEPS)
--include $(TEST_DEPS)
+-include $(COMMON_C_DEPS)
+-include $(CPP_DEPS)
 
 .PHONY: clean
 clean:
-	rm -rf $(ROCKETLIB_OBJS) $(ROCKETLIB_DEPS) $(TEST_OBJS) $(TEST_DEPS) *.o ../common/*.gcda ../common/*.gcno *.gcda *.gcno unit_test *.info html
+	rm -rf $(COMMON_C_OBJS) $(COMMON_C_DEPS) $(CPP_OBJS) $(CPP_DEPS) *.o ../common/*.gcda ../common/*.gcno *.gcda *.gcno unit_test *.info html

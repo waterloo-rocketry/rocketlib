@@ -8,3 +8,5 @@ compile_commands.json
 .DS_Store
 tests/unit_test
 tests/html
+build-cov
+build
