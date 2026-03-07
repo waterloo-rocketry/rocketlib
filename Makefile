@@ -34,4 +34,6 @@ TEST_SRCS := \
 	tests/test_low_pass_filter.cpp \
 	tests/test_mbr.cpp
 
+ROCKETTEST_PATH := rockettest
+
 include flows/firmware-library.mk
