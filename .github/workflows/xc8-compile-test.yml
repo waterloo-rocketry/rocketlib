@@ -25,4 +25,4 @@ jobs:
 
       - name: Run Compile
         run: |
-          make xc8-build
+          make xc8-build XC8_DFP_PATH=xc8
