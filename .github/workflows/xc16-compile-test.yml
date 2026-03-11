@@ -20,4 +20,4 @@ jobs:
 
       - name: Run Compile
         run: |
-          /opt/microchip/xc16/v2.10/bin/xc16-gcc -mcpu=33EP256GP502 -Iinclude -c -std=c99 -Wall common/crc8.c common/low_pass_filter.c
+          make xc16-build

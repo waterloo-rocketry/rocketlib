@@ -25,4 +25,4 @@ jobs:
 
       - name: Run Compile
         run: |
-          /opt/microchip/xc8/v3.10/bin/xc8-cc -mcpu=18F26K83 -mdfp=xc8 -Iinclude -c -mwarn=-9 -std=c99 -Wpedantic common/crc8.c common/low_pass_filter.c pic18f26k83/i2c.c pic18f26k83/pwm.c pic18f26k83/timer.c
+          make xc8-build
