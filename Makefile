@@ -34,12 +34,6 @@ TEST_SRCS := \
 	tests/test_low_pass_filter.cpp \
 	tests/test_mbr.cpp
 
-ROCKETTEST_SRCS := \
-	rockettest/rockettest.cpp
-
-ROCKETTEST_HEADERS := \
-	rockettest/rockettest.hpp
-
-ROCKETTEST_INCLUDE_PATH := rockettest
+ROCKETLIB_SUBMODULE_PATH := .
 
 include flows/firmware-library.mk
