@@ -1,6 +1,6 @@
 #include <xc.h>
 
-#include "i2c.h"
+#include "pic18f26k83/i2c.h"
 
 #ifndef _XTAL_FREQ
 // Define crystal frequency for delay macros (default: 16 MHz)
