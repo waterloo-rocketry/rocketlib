@@ -16,8 +16,8 @@ PIC18_C_SRCS := \
 	pic18f26k83/timer.c
 
 PIC18_C_HEADERS := \
-	include/i2c.h \
-	include/pwm.h \
+	include/pic18f26k83/i2c.h \
+	include/pic18f26k83/pwm.h \
 	include/timer.h
 
 STM32H7_C_SRCS := \

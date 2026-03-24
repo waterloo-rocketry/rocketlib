@@ -1,5 +1,6 @@
-#include "pwm.h"
 #include <xc.h>
+
+#include "pic18f26k83/pwm.h"
 
 /**
  * @brief Helper function to configure PPS registers using direct register access
