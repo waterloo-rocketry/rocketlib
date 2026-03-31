@@ -32,7 +32,8 @@ INCLUDE_PATHS := \
 TEST_SRCS := \
 	tests/test_crc8.cpp \
 	tests/test_low_pass_filter.cpp \
-	tests/test_mbr.cpp
+	tests/test_mbr.cpp \
+	tests/test_math.cpp
 
 ROCKETLIB_SUBMODULE_PATH := .
 
