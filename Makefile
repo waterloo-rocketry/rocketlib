@@ -8,6 +8,7 @@ COMMON_C_HEADERS := \
 	include/crc8.h \
 	include/electrical.h \
 	include/low_pass_filter.h \
+	include/mathops.h \
 	include/mbr.h
 
 PIC18_C_SRCS := \
