@@ -8,6 +8,7 @@ COMMON_C_HEADERS := \
 	include/crc8.h \
 	include/electrical.h \
 	include/low_pass_filter.h \
+	include/mathops.h \
 	include/mbr.h
 
 PIC18_C_SRCS := \
@@ -32,6 +33,7 @@ INCLUDE_PATHS := \
 TEST_SRCS := \
 	tests/test_crc8.cpp \
 	tests/test_low_pass_filter.cpp \
+	tests/test_mathops.cpp \
 	tests/test_mbr.cpp
 
 ROCKETLIB_SUBMODULE_PATH := .
