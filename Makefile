@@ -34,7 +34,8 @@ TEST_SRCS := \
 	tests/test_crc8.cpp \
 	tests/test_low_pass_filter.cpp \
 	tests/test_mathops.cpp \
-	tests/test_mbr.cpp
+	tests/test_mbr.cpp \
+	tests/test_rockettest.cpp
 
 ROCKETLIB_SUBMODULE_PATH := .
 
