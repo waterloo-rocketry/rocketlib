@@ -40,7 +40,9 @@ typedef enum {
 	/// @brief Buffer underflow, for example trying to read/pop from an empty FIFO buffer
 	W_UNDERFLOW,
 	/// @brief Data format error, for example input is a malformed CAN packet
-	W_DATA_FORMAT_ERROR
+	W_DATA_FORMAT_ERROR,
+	/// @brief Canards module error, for example logger intialization failure
+	W_MODULE_FAILURE
 } w_status_t;
 
 #ifndef UNIT_TEST
