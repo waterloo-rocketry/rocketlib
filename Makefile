@@ -25,7 +25,7 @@ STM32H7_C_SRCS := \
 	stm32h7/littlefs_sd_shim.c
 
 STM32H7_C_HEADERS := \
-	include/stm32/littlefs_sd_shim.h
+	include/stm32h7/littlefs_sd_shim.h
 
 INCLUDE_PATHS := \
 	include
