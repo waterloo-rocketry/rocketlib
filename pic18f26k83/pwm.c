@@ -67,10 +67,10 @@ w_status_t pwm_init(uint8_t ccp_module, pwm_pin_config_t pin_config, uint16_t pw
 		default:
 			return W_INVALID_PARAM;
 	}
-	*ccp_con = 0x8C; // Enable CCP module in PWM mode (PWM mode selection)
+	*ccp_con = 0x8c; // Enable CCP module in PWM mode (PWM mode selection)
 
 	// Set PWM period using Timer2
-	PR2 = pwm_period & 0xFF; // Load lower 8 bits of PWM period into PR2 register
+	PR2 = pwm_period & 0xff; // Load lower 8 bits of PWM period into PR2 register
 	TMR2 = 0; // Reset Timer2 count to 0
 	T2CONbits.T2CKPS = 0; // Set Timer2 prescaler to 1:1 (no prescaling)
 	T2CONbits.T2OUTPS = 0; // Set Timer2 postscaler to 1:1 (no postscaling)
@@ -126,7 +126,7 @@ w_status_t pwm_update_duty_cycle(uint8_t ccp_module, uint16_t duty_cycle) {
 
 	// Update the lower 8 bits of the duty cycle
 	// This sets the low byte of the duty cycle for the PWM signal
-	*ccpr_l = duty_cycle & 0xFF;
+	*ccpr_l = duty_cycle & 0xff;
 
 	// Update the upper 2 bits of the duty cycle for 10-bit resolution
 	// This sets the high bits of the duty cycle to achieve 10-bit PWM precision
