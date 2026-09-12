@@ -36,8 +36,8 @@ static w_status_t check_i2c_state(void) {
 
 	// Check for any error conditions
 	if (I2C1ERRbits.BCLIF || // Bus collision
-		I2C1ERRbits.BTOIF || // Bus timeout
-		I2C1ERRbits.NACKIF) { // Not acknowledged
+	    I2C1ERRbits.BTOIF || // Bus timeout
+	    I2C1ERRbits.NACKIF) { // Not acknowledged
 
 		I2C1ERR = 0; // Clear error flags
 		return W_IO_ERROR;
@@ -303,7 +303,7 @@ w_status_t i2c_write_reg16(uint8_t address, uint8_t reg, uint16_t val) {
 	uint8_t data[3] = {
 		reg,
 		(uint8_t)(val >> 8), // MSB first
-		(uint8_t)(val & 0xFF) // LSB second
+		(uint8_t)(val & 0xff) // LSB second
 	};
 	return i2c_write(address, data, 3);
 }
