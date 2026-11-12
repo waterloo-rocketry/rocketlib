@@ -45,9 +45,17 @@ PIC18_C_HEADERS := \
 	pic18f26k83/pic18f26k83_can.h \
 	pic18f26k83/pic18f26k83_timer.h
 
-STM32H7_C_SRCS := stm32h7/stm32h7_can.c
+STM32_COMMON_C_SRCS := stm32_common/stm32_can.c
 
-STM32H7_C_HEADERS := stm32h7/stm32h7_can.h
+STM32_COMMON_C_HEADERS := stm32_common/stm32_can.h
+
+STM32H5_C_SRCS := 
+
+STM32H5_C_HEADERS := 
+
+STM32H7_C_SRCS := 
+
+STM32H7_C_HEADERS := 
 
 INCLUDE_PATHS := .
 

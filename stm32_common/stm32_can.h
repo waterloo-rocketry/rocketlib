@@ -7,6 +7,8 @@
 #include "stm32h5xx_hal.h"
 #elif (defined(STM32H723xx) || defined(STM32H733xx) || defined(STM32H750xx) || defined(STM32H753xx))
 #include "stm32h7xx_hal.h"
+#else
+#error "rocketlib/stm32_common/stm32_can: unsupported MCU type"
 #endif
 
 #include "can_message/can.h"
