@@ -1,6 +1,6 @@
 # To include a module in parent project with CMake target named 'my_app':
 #	add_subdirectory(third_party/rocketlib)
-#	target_link_libraries(my_app PRIVATE rocketlib::can_message rocketlib::stm32h7) <- Add all directories where we need source files
+#	target_link_libraries(my_app PRIVATE rocketlib::can_message rocketlib::stm32_common) <- Add all directories where we need source files
 # If no source files are needed, only headers, replace the target_link_libraries line:
 #	target_link_libraries(my_app PRIVATE rocketlib::headers)
  
@@ -51,7 +51,7 @@ rocketlib_sources(mcp2515
 rocketlib_sources(pic18f26k83
 	SOURCE_FILES pic18f26k83_can.c pic18f26k83_can_timing_util.c pic18f26k83_timer.c
 )
-rocketlib_sources(stm32h7
-	SOURCE_FILES stm32h7_can.c
+rocketlib_sources(stm32_common
+	SOURCE_FILES stm32_can.c
 )
 
