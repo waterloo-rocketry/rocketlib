@@ -1,15 +1,13 @@
 #include <string.h>
 
-#include "stm32h7xx_hal.h"
-
-#include "stm32h7/stm32h7_can.h"
+#include "stm32_common/stm32_can.h"
 
 static void (*can_rcv_cb)(const can_msg_t *message);
 // static uint16_t RxBufferIdx = 0;
 static FDCAN_HandleTypeDef *fdcan_handle;
 
-bool stm32h7_can_init(FDCAN_HandleTypeDef *handle,
-                      void (*receive_callback)(const can_msg_t *message)) {
+bool stm32_can_init(FDCAN_HandleTypeDef *handle,
+                    void (*receive_callback)(const can_msg_t *message)) {
 	// bind user callback function and fdcan handle
 	can_rcv_cb = receive_callback;
 	fdcan_handle = handle;
@@ -49,7 +47,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 	can_rcv_cb(&rcvd_msg);
 }
 
-bool stm32h7_can_send(const can_msg_t *message) {
+bool stm32_can_send(const can_msg_t *message) {
 	// Reinit the CAN module if a bus off state was detected
 	FDCAN_ProtocolStatusTypeDef protocolStatus = {};
 	HAL_FDCAN_GetProtocolStatus(fdcan_handle, &protocolStatus);
@@ -79,7 +77,7 @@ bool stm32h7_can_send(const can_msg_t *message) {
 	return true;
 }
 
-bool stm32h7_can_send_rdy(void) {
+bool stm32_can_send_rdy(void) {
 	return HAL_FDCAN_GetTxFifoFreeLevel(fdcan_handle) > 0;
 }
 
