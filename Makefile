@@ -1,3 +1,7 @@
+# Use this Makefile to run unit tests for rocketlib. 
+# Not to be confused with rocketlib's CMakeLists.txt, which is used for
+# including rocketlib in a CMake-based build in a parent project.
+
 COMMON_C_SRCS := \
 	can_buffer/can_rcv_buffer.c \
 	can_buffer/can_tx_buffer.c \
