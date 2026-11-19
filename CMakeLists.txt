@@ -1,7 +1,11 @@
-# To include a module in parent project with CMake target named 'my_app':
-#	add_subdirectory(third_party/rocketlib)
+# Use this CMakeLists to include rocketlib in a CMake-based firmware project.
+# Not to be confused with rocketlib's Makefile, which is used mainly for unit tests.
+
+# In the parent project, first add the rocketlib directory:
+#	add_subdirectory(path/to/rocketlib)
+# Then, to include a module in CMake target named 'my_app':
 #	target_link_libraries(my_app PRIVATE rocketlib::can_message rocketlib::stm32_common) <- Add all directories where we need source files
-# If no source files are needed, only headers, replace the target_link_libraries line:
+# If no source files are needed, only headers:
 #	target_link_libraries(my_app PRIVATE rocketlib::headers)
  
 cmake_minimum_required(VERSION 3.22)
